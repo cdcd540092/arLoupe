@@ -31,13 +31,24 @@
             {{ t.patient.approvedContent }}
           </h3>
           <div v-show="selectedVideo" class="video-container bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl relative group mb-12">
-             <div class="aspect-video bg-black flex items-center justify-center relative">
-                <div class="absolute inset-0 bg-blue-500/10 backdrop-blur-3xl"></div>
-                <div class="z-10 text-center">
-                  <button class="w-24 h-24 bg-white/10 hover:bg-white/20 rounded-full border border-white/30 backdrop-blur-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-                  </button>
-                  <p class="text-white font-bold mt-4 tracking-widest uppercase text-xs opacity-60">{{ t.patient.readyToPlay }}</p>
+             <div class="aspect-video bg-black flex items-center justify-center relative group/video">
+                <video 
+                   ref="patientVideoRef" 
+                   :src="selectedVideo?.url" 
+                   class="absolute inset-0 w-full h-full object-contain z-10" 
+                   controls
+                   @pause="isPlaying = false"
+                   @play="isPlaying = true"
+                ></video>
+
+                <!-- Overlay -->
+                <div v-show="!isPlaying" class="absolute inset-0 z-20 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center transition-opacity" @click="playVideo">
+                  <div class="z-30 text-center">
+                    <button class="w-24 h-24 bg-white/10 hover:bg-white/20 rounded-full border border-white/30 backdrop-blur-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 mx-auto">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    </button>
+                    <p class="text-white font-bold mt-4 tracking-widest uppercase text-xs opacity-60">{{ t.patient.readyToPlay }}</p>
+                  </div>
                 </div>
              </div>
              <div class="p-8 bg-slate-900 border-t border-white/5 flex items-center justify-between">
@@ -67,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useUserStore } from '@/store/userStore';
 import { useLangStore } from '@/store/langStore';
 import { useThemeStore } from '@/store/themeStore';
@@ -77,11 +88,30 @@ const langStore = useLangStore();
 const themeStore = useThemeStore();
 const t = computed(() => langStore.t);
 const selectedVideoId = ref(1);
+const patientVideoRef = ref(null);
+const isPlaying = ref(false);
 
 const approvedVideos = ref([
-  { id: 1, title: 'Dental Scaler Procedure (Full Record)', date: 'April 07, 2026', type: 'Clinical Video' },
-  { id: 2, title: 'Final Assessment Clip', date: 'April 07, 2026', type: 'Educational' }
+  { id: 1, title: 'Dental Scaler Procedure (Full Record)', date: 'April 07, 2026', type: 'Clinical Video', url: '/procedure_demo.mp4' },
+  { id: 2, title: 'Final Assessment Clip', date: 'April 07, 2026', type: 'Educational', url: '/procedure_demo.mp4#t=5,15' }
 ]);
 
 const selectedVideo = computed(() => approvedVideos.value.find(v => v.id === selectedVideoId.value));
+
+const playVideo = () => {
+    if (patientVideoRef.value) {
+        patientVideoRef.value.play();
+        isPlaying.value = true;
+    }
+};
+
+// Reset video state when switching selection
+watch(selectedVideoId, () => {
+    isPlaying.value = false;
+    if (patientVideoRef.value) {
+        patientVideoRef.value.pause();
+        patientVideoRef.value.currentTime = 0;
+        patientVideoRef.value.load();
+    }
+});
 </script>

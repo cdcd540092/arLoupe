@@ -1,7 +1,7 @@
 <template>
   <div class="video-player-wrapper space-y-6">
     <div class="bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 relative group">
-      <div class="aspect-video relative overflow-hidden bg-black flex items-center justify-center">
+      <div ref="containerRef" class="aspect-video relative overflow-hidden bg-black flex items-center justify-center">
         <!-- Real Video Element -->
         <video 
           ref="videoRef"
@@ -45,7 +45,7 @@
               </div>
             </div>
             <button @click="cycleSpeed" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-white text-xs font-black transition-all">{{ playbackSpeed }}x</button>
-            <button class="p-2 text-slate-300 hover:text-white transition-colors">
+            <button @click="toggleFullscreen" class="p-2 text-slate-300 hover:text-white transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
             </button>
           </div>
@@ -188,6 +188,7 @@ const recordingsStore = useRecordingsStore();
 const t = computed(() => langStore.t);
 
 const videoRef = ref(null);
+const containerRef = ref(null);
 const isPlaying = ref(false);
 const isPreviewing = ref(false); // 儲存預覽結束的秒數，若為false代表一般播放
 const currentTime = ref(0);
@@ -278,6 +279,20 @@ const cycleSpeed = () => {
   const next = speeds[(speeds.indexOf(playbackSpeed.value) + 1) % speeds.length];
   playbackSpeed.value = next;
   if (videoRef.value) videoRef.value.playbackRate = next;
+};
+
+const toggleFullscreen = () => {
+  if (!document.fullscreenElement) {
+    if (containerRef.value?.requestFullscreen) {
+      containerRef.value.requestFullscreen();
+    } else if (videoRef.value?.webkitEnterFullscreen) {
+      videoRef.value.webkitEnterFullscreen(); // iOS Safari fallback
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
 };
 
 const seekTo = (e) => {

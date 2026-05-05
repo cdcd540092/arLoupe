@@ -10,6 +10,11 @@ export default {
     // Login
     login: {
         selectPortal: '選擇存取入口',
+        username: '帳號名稱',
+        password: '密碼',
+        signIn: '登入系統',
+        signIning: '登入中...',
+        quickTesting: '快速測試帳號',
         adminAccess: '管理員入口',
         adminDesc: '系統設定、使用者帳號、安全策略',
         clinicalStaff: '臨床人員',
