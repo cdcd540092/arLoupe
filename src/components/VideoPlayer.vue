@@ -67,40 +67,9 @@
             <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
             <span class="text-[12px] font-bold tracking-tighter">HD 1080P</span>
           </div>
-          <button @click="showShareModal = !showShareModal" class="relative px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all active:scale-95 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
-            {{ t.player.share }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Share Modal -->
-      <div v-if="showShareModal" class="absolute right-4 bottom-20 z-50 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 w-80 animate-fade-in">
-        <h4 class="font-black text-sm text-slate-800 dark:text-white mb-4 flex items-center justify-between">
-          {{ t.player.shareTitle }}
-          <button @click="showShareModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
-        </h4>
-        <div class="space-y-3">
-          <button @click="copyLink" class="w-full flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-left">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="2" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-            <div>
-              <p class="font-bold text-xs text-slate-800 dark:text-white">{{ linkCopied ? t.player.linkCopied : t.player.copyLink }}</p>
-              <p class="text-[10px] text-slate-400">{{ t.player.copyLinkDesc }}</p>
-            </div>
-          </button>
-          <button class="w-full flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-left">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
-            <div>
-              <p class="font-bold text-xs text-slate-800 dark:text-white">{{ t.player.sendToStaff }}</p>
-              <p class="text-[10px] text-slate-400">{{ t.player.sendToStaffDesc }}</p>
-            </div>
-          </button>
-          <button class="w-full flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-left">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            <div>
-              <p class="font-bold text-xs text-slate-800 dark:text-white">{{ t.player.generatePatientLink }}</p>
-              <p class="text-[10px] text-slate-400">{{ t.player.generatePatientLinkDesc }}</p>
-            </div>
+          <button @click="downloadCurrentVideo" class="relative px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-indigo-500/30">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            {{ t.player.downloadVideo }}
           </button>
         </div>
       </div>
@@ -134,14 +103,14 @@
             <label class="text-[10px] font-black text-slate-500 uppercase block mb-2 tracking-widest">{{ t.player.endTime }}</label>
             <div class="flex gap-2">
               <input v-model="clipEnd" type="text" placeholder="00:00:00" class="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-mono font-bold focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-              <button @click="clipEnd = formatTime(duration)" class="px-3 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-bold text-slate-500 hover:text-blue-500 transition-colors border border-slate-200 dark:border-slate-600">END</button>
+              <button @click="clipEnd = formatTime(currentTime)" class="px-3 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-bold text-slate-500 hover:text-blue-500 transition-colors border border-slate-200 dark:border-slate-600">NOW</button>
             </div>
           </div>
         </div>
-        <div class="relative h-12 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div class="absolute inset-y-0 bg-blue-500/20 border-x-2 border-blue-500 rounded transition-all duration-300" :style="{ left: clipStartPercent + '%', width: clipWidthPercent + '%' }"></div>
-          <div class="absolute top-1/2 -translate-y-1/2 w-3 h-8 bg-blue-600 rounded-full cursor-ew-resize shadow-lg transition-all duration-300" style="transform: translate(-50%, -50%);" :style="{ left: clipStartPercent + '%' }"></div>
-          <div class="absolute top-1/2 -translate-y-1/2 w-3 h-8 bg-blue-600 rounded-full cursor-ew-resize shadow-lg transition-all duration-300" style="transform: translate(-50%, -50%);" :style="{ left: (clipStartPercent + clipWidthPercent) + '%' }"></div>
+        <div ref="timelineRef" class="relative h-12 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden select-none">
+          <div class="absolute inset-y-0 bg-blue-500/20 border-x-2 border-blue-500 rounded" :style="{ left: clipStartPercent + '%', width: clipWidthPercent + '%' }"></div>
+          <div @mousedown="startDrag('start', $event)" class="absolute top-1/2 -translate-y-1/2 w-3 h-8 bg-blue-600 rounded-full cursor-ew-resize shadow-lg z-10" style="transform: translate(-50%, -50%);" :style="{ left: clipStartPercent + '%' }"></div>
+          <div @mousedown="startDrag('end', $event)" class="absolute top-1/2 -translate-y-1/2 w-3 h-8 bg-blue-600 rounded-full cursor-ew-resize shadow-lg z-10" style="transform: translate(-50%, -50%);" :style="{ left: (clipStartPercent + clipWidthPercent) + '%' }"></div>
         </div>
         <div class="flex gap-4">
           <button @click="createClip" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
@@ -167,11 +136,32 @@
                 </div>
               </div>
               <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                <button @click.stop class="px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black rounded-lg hover:bg-blue-700">{{ t.player.share }}</button>
+                <button @click.stop="exportClip(clip)" :disabled="isExporting" class="px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-black rounded-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1 min-w-[80px] justify-center">
+                   <svg v-if="isExporting" class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                   {{ isExporting ? (exportStatus || (Math.round(exportProgress) + '%')) : t.player.exportMp4 }}
+                </button>
+                <button @click.stop="triggerSaveToCloud(clip)" :disabled="clip.isSaved || clip.isSaving || isExporting" class="px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:bg-blue-800 transition-all flex items-center gap-1 justify-center min-w-[80px]">
+                   <svg v-if="clip.isSaving" class="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                   <svg v-else-if="clip.isSaved" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                   {{ clip.isSaving ? (exportStatus || t.player.processing) : clip.isSaved ? t.player.saved : t.player.saveToCloud }}
+                </button>
                 <button @click.stop="deleteClip(clip.id)" class="px-3 py-1.5 bg-red-500/10 text-red-500 text-[10px] font-black rounded-lg hover:bg-red-500/20">{{ t.player.deleteClip }}</button>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div v-if="showRenameModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 w-96 transform transition-all scale-100">
+        <h4 class="font-black text-lg text-slate-800 dark:text-white mb-2">{{ t.player.renameClip }}</h4>
+        <p class="text-xs text-slate-500 mb-4">{{ t.player.renameDesc }}</p>
+        <input v-model="renameInput" type="text" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-6 text-slate-800 dark:text-white" :placeholder="t.player.enterClipName" @keyup.enter="confirmSaveToCloud" autofocus />
+        <div class="flex justify-end gap-3">
+          <button @click="showRenameModal = false" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold transition-all">{{ t.player.cancel }}</button>
+          <button @click="confirmSaveToCloud" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-500/30">{{ t.player.confirmSave }}</button>
         </div>
       </div>
     </div>
@@ -180,6 +170,8 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import { useLangStore } from '@/store/langStore';
 import { useRecordingsStore } from '@/store/recordingsStore';
 
@@ -189,18 +181,27 @@ const t = computed(() => langStore.t);
 
 const videoRef = ref(null);
 const containerRef = ref(null);
+const timelineRef = ref(null);
 const isPlaying = ref(false);
 const isPreviewing = ref(false); // 儲存預覽結束的秒數，若為false代表一般播放
 const currentTime = ref(0);
 const duration = ref(0);
 const playbackSpeed = ref(1);
-const showShareModal = ref(false);
-const linkCopied = ref(false);
 const showClipEditor = ref(true);
 const clipStart = ref('00:00:00');
 const clipEnd = ref('00:00:00');
 const savedClips = ref([]);
 let clipCounter = 1;
+
+const ffmpeg = new FFmpeg();
+const isFFmpegLoaded = ref(false);
+const isExporting = ref(false);
+const exportProgress = ref(0);
+const exportStatus = ref('');
+
+const showRenameModal = ref(false);
+const renameInput = ref('');
+const clipToSave = ref(null);
 
 const parseTimeToSeconds = (timeStr) => {
   if (!timeStr) return 0;
@@ -295,12 +296,68 @@ const toggleFullscreen = () => {
   }
 };
 
+const downloadCurrentVideo = () => {
+    const currentRec = recordingsStore.currentRecording;
+    if (!currentRec || !currentRec.videoUrl) return;
+    
+    const url = currentRec.videoUrl;
+    // 如果是 blob 網址或是真實網址，過濾掉 #t= 時間戳記再下載
+    const cleanUrl = url.startsWith('blob:') ? url : url.split('#')[0];
+    
+    const a = document.createElement('a');
+    a.href = cleanUrl;
+    
+    // 設定合適的檔名
+    const safeName = (currentRec.patientName || 'Patient').replace(/[\s\(\)]+/g, '_').replace(/_+$/, '');
+    const safeType = (currentRec.type || 'Video').replace(/\s+/g, '_');
+    a.download = `arLoupe_${safeName}_${safeType}.mp4`;
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+};
+
 const seekTo = (e) => {
   const r = e.currentTarget.getBoundingClientRect();
   const time = ((e.clientX - r.left) / r.width) * duration.value;
   if (videoRef.value) {
     videoRef.value.currentTime = time;
   }
+};
+
+let activeDrag = null;
+
+const startDrag = (type, e) => {
+    activeDrag = type;
+    e.preventDefault();
+    window.addEventListener('mousemove', onDrag);
+    window.addEventListener('mouseup', stopDrag);
+};
+
+const onDrag = (e) => {
+    if (!activeDrag || !timelineRef.value || duration.value <= 0) return;
+    
+    const rect = timelineRef.value.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    x = Math.max(0, Math.min(x, rect.width));
+    
+    let time = (x / rect.width) * duration.value;
+    
+    if (activeDrag === 'start') {
+        const endTime = parseTimeToSeconds(clipEnd.value);
+        if (time > endTime) time = endTime;
+        clipStart.value = formatTime(time);
+    } else {
+        const startTime = parseTimeToSeconds(clipStart.value);
+        if (time < startTime) time = startTime;
+        clipEnd.value = formatTime(time);
+    }
+};
+
+const stopDrag = () => {
+    activeDrag = null;
+    window.removeEventListener('mousemove', onDrag);
+    window.removeEventListener('mouseup', stopDrag);
 };
 
 const previewClip = (startStr, endStr) => {
@@ -316,10 +373,154 @@ const previewClip = (startStr, endStr) => {
   isPreviewing.value = endSec; // 標記為預覽模式，結束時間為 endSec
 };
 
-const copyLink = () => { linkCopied.value = true; setTimeout(() => { linkCopied.value = false; }, 2000); };
 const createClip = () => { 
-  if (parseTimeToSeconds(clipStart.value) >= parseTimeToSeconds(clipEnd.value)) return;
-  savedClips.value.push({ id: clipCounter++, name: `Clip ${clipCounter - 1} — Custom Segment`, start: clipStart.value, end: clipEnd.value }); 
+  const sSec = parseTimeToSeconds(clipStart.value);
+  const eSec = parseTimeToSeconds(clipEnd.value);
+  if (sSec >= eSec) return;
+  savedClips.value.push({ 
+      id: clipCounter++, 
+      name: `Clip ${clipCounter - 1} — Custom Segment`, 
+      start: clipStart.value, 
+      end: clipEnd.value,
+      startSec: sSec,
+      endSec: eSec,
+      isSaving: false,
+      isSaved: false
+  }); 
 };
 const deleteClip = (id) => { savedClips.value = savedClips.value.filter(c => c.id !== id); };
+
+const triggerSaveToCloud = (clip) => {
+    if (clip.isSaved || clip.isSaving) return;
+    clipToSave.value = clip;
+    renameInput.value = clip.name;
+    showRenameModal.value = true;
+};
+
+const confirmSaveToCloud = async () => {
+    if (!clipToSave.value || !renameInput.value.trim()) return;
+    
+    if (typeof SharedArrayBuffer === 'undefined') {
+        alert('瀏覽器不支援實體剪輯，請確保在 localhost 執行！');
+        return;
+    }
+
+    const clip = clipToSave.value;
+    clip.name = renameInput.value.trim();
+    showRenameModal.value = false;
+    
+    clip.isSaving = true;
+    isExporting.value = true;
+    exportProgress.value = 0;
+    
+    try {
+        const physicalUrl = await processPhysicalClip(clip);
+        clip.physicalBlobUrl = physicalUrl;
+        
+        exportStatus.value = '上傳伺服器...';
+        await recordingsStore.saveClipToDatabase(clip);
+        clip.isSaved = true;
+    } catch (err) {
+        console.error(err);
+        alert('儲存至資料庫失敗：' + (err.message || err));
+    } finally {
+        clip.isSaving = false;
+        isExporting.value = false;
+        exportStatus.value = '';
+        clipToSave.value = null;
+    }
+};
+
+const loadFFmpeg = async () => {
+    if (isFFmpegLoaded.value) return;
+    
+    ffmpeg.on('progress', ({ progress }) => {
+        exportProgress.value = Math.min(progress * 100, 100);
+        if (progress > 0 && progress < 1) exportStatus.value = '處理中...';
+    });
+    
+    ffmpeg.on('log', ({ message }) => {
+        console.log('[FFMPEG]', message);
+    });
+    
+    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+    
+    try {
+        await ffmpeg.load({
+            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        });
+    } catch (e) {
+        console.warn('載入核心失敗，嘗試自動後備載入', e);
+        await ffmpeg.load();
+    }
+    isFFmpegLoaded.value = true;
+};
+
+const processPhysicalClip = async (clip) => {
+    exportStatus.value = '載入核心...';
+    await loadFFmpeg();
+    
+    const videoUrl = recordingsStore.currentRecording?.videoUrl;
+    if (!videoUrl) throw new Error("No video selected");
+    
+    exportStatus.value = '讀取影片...';
+    const fileData = await fetchFile(videoUrl);
+    
+    exportStatus.value = '寫入暫存...';
+    await ffmpeg.writeFile('input.mp4', fileData);
+    
+    exportStatus.value = '剪輯中...';
+    
+    const startSec = parseTimeToSeconds(clip.start);
+    const endSec = parseTimeToSeconds(clip.end);
+    const durationSec = endSec - startSec;
+    
+    // Execute FFmpeg to cut the video (-c copy to avoid re-encoding)
+    await ffmpeg.exec([
+        '-ss', String(startSec),
+        '-i', 'input.mp4',
+        '-t', String(durationSec),
+        '-c', 'copy',
+        'output.mp4'
+    ]);
+    
+    // Read back the cut video
+    exportStatus.value = '產出實體檔...';
+    const data = await ffmpeg.readFile('output.mp4');
+    
+    const blob = new Blob([data.buffer], { type: 'video/mp4' });
+    return URL.createObjectURL(blob);
+};
+
+const exportClip = async (clip) => {
+    try {
+        if (typeof SharedArrayBuffer === 'undefined') {
+            throw new Error('瀏覽器不支援 SharedArrayBuffer。請使用 localhost 或確保伺服器已設定 COOP/COEP Headers。');
+        }
+        
+        isExporting.value = true;
+        exportProgress.value = 0;
+        
+        const url = await processPhysicalClip(clip);
+        
+        // Download logic
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${clip.name.replace(/\s+/g, '_')}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Timeout to ensure download starts before revoking
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch (err) {
+        console.error('Export failed:', err);
+        alert('影片匯出失敗：' + (err.message || err));
+    } finally {
+        isExporting.value = false;
+        exportProgress.value = 0;
+        exportStatus.value = '';
+    }
+};
 </script>

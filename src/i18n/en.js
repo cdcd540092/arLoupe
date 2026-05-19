@@ -22,8 +22,20 @@ export default {
 
     // Sidebar
     sidebar: {
+        liveStream: 'Live Stream',
         medicalViewer: 'Medical Viewer',
         managementConsole: 'Management Console'
+    },
+
+    // Live Stream
+    live: {
+        title: 'Real-time Video Feed',
+        subtitle: 'arLoupe Camera Live Stream',
+        startRecording: 'START RECORDING',
+        stopRecording: 'STOP RECORDING',
+        captureFrame: 'CAPTURE FRAME',
+        offline: 'Camera Offline',
+        offlineDesc: 'Please check arLoupe connection or network settings.'
     },
 
     // Clinical Viewer
@@ -69,7 +81,17 @@ export default {
         savedClips: 'Saved Clips',
         deleteClip: 'DELETE',
         recorded: 'Recorded',
-        duration: 'Duration'
+        duration: 'Duration',
+        downloadVideo: 'DOWNLOAD VIDEO',
+        exportMp4: 'EXPORT MP4',
+        saveToCloud: 'SAVE TO CLOUD',
+        processing: 'PROCESSING...',
+        saved: 'SAVED',
+        renameClip: 'Rename Clip',
+        renameDesc: 'Set an easily identifiable name for the clip to display in the patient record list.',
+        enterClipName: 'Enter clip name...',
+        cancel: 'Cancel',
+        confirmSave: 'Confirm Save'
     },
 
     // Management

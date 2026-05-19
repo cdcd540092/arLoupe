@@ -27,8 +27,20 @@ export default {
 
     // Sidebar
     sidebar: {
+        liveStream: '即時影像',
         medicalViewer: '臨床檢視器',
         managementConsole: '管理後台'
+    },
+
+    // Live Stream
+    live: {
+        title: '即時視訊畫面',
+        subtitle: 'arLoupe 鏡頭實況',
+        startRecording: '開始錄影',
+        stopRecording: '停止錄影',
+        captureFrame: '截圖捕捉',
+        offline: '鏡頭未連線',
+        offlineDesc: '請檢查 arLoupe 眼鏡是否已開啟並連上網路。'
     },
 
     // Clinical Viewer
@@ -74,7 +86,17 @@ export default {
         savedClips: '已儲存片段',
         deleteClip: '刪除',
         recorded: '錄製日期',
-        duration: '長度'
+        duration: '長度',
+        downloadVideo: '下載當前影片',
+        exportMp4: '匯出 MP4',
+        saveToCloud: '儲存至雲端',
+        processing: '處理中...',
+        saved: '已保存',
+        renameClip: '重新命名片段',
+        renameDesc: '為即將儲存的片段設定一個易於辨識的名稱，這將顯示在右側病患紀錄列表中。',
+        enterClipName: '輸入片段名稱...',
+        cancel: '取消',
+        confirmSave: '確認儲存'
     },
 
     // Management
@@ -116,7 +138,7 @@ export default {
     // Patient Portal
     patient: {
         welcomeBack: '歡迎回來，',
-        approvedContent: '您的核准內容',
+        approvedContent: '您的影像資料',
         readyToPlay: '準備播放',
         saveFile: '儲存檔案',
         healthStatus: '健康狀態',

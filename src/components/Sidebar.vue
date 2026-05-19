@@ -18,6 +18,12 @@
         <span class="font-semibold text-[15px]">{{ t.sidebar.medicalViewer }}</span>
         <div v-show="$route.name === 'ClinicalViewer'" class="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
       </router-link>
+
+      <router-link to="/live" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-slate-700/50 group" :class="{ 'bg-blue-600/20 text-blue-400 border border-blue-500/30': $route.name === 'LiveStream' }">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.6 11.6L22 7v10l-6.4-4.5v-1z"/><circle cx="6" cy="12" r="3"/><circle cx="6" cy="12" r="6" class="opacity-30"/><circle cx="6" cy="12" r="9" class="opacity-10"/></svg>
+        <span class="font-semibold text-[15px]">{{ t.sidebar.liveStream }}</span>
+        <div v-show="$route.name === 'LiveStream'" class="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
+      </router-link>
       
       <router-link v-if="userStore.isAdmin" to="/management" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-slate-700/50 group" :class="{ 'bg-blue-600/20 text-blue-400 border border-blue-500/30': $route.name === 'Management' }">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>

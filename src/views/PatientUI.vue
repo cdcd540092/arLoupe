@@ -56,7 +56,7 @@
                   <h4 class="text-xl font-black text-white">{{ selectedVideo?.title }}</h4>
                   <p class="text-xs font-bold text-slate-500 uppercase mt-1 tracking-widest">{{ selectedVideo?.date }} • {{ selectedVideo?.type }}</p>
                </div>
-               <button class="bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-6 rounded-2xl shadow-xl shadow-blue-500/30 transition-all flex items-center gap-2">
+               <button @click="downloadFile" class="bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-6 rounded-2xl shadow-xl shadow-blue-500/30 transition-all flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                   {{ t.patient.saveFile }}
                </button>
@@ -114,4 +114,24 @@ watch(selectedVideoId, () => {
         patientVideoRef.value.load();
     }
 });
+
+const downloadFile = () => {
+    if (!selectedVideo.value) return;
+    
+    // Create an invisible anchor element
+    const link = document.createElement('a');
+    
+    // Remove the time fragment (#t=...) from the URL to get the actual file path
+    const url = selectedVideo.value.url.split('#')[0];
+    
+    link.href = url;
+    // Format the title into a valid filename
+    const filename = selectedVideo.value.title.replace(/[\s\(\)]+/g, '_').toLowerCase();
+    link.download = `${filename}.mp4`;
+    
+    // Append, click, and remove the element
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
 </script>

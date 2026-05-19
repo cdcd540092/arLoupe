@@ -189,7 +189,7 @@ const quickLogin = (role) => {
     userStore.setUser({ name: 'Dr. Chen', role: 'staff' });
     router.push('/');
   } else {
-    userStore.setUser({ name: 'Dwayne Johnson', role: 'patient' });
+    userStore.setUser({ name: 'Robert Lin', role: 'patient' });
     router.push('/portal');
   }
 };

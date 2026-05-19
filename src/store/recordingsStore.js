@@ -33,19 +33,76 @@ export const useRecordingsStore = defineStore('recordings', () => {
         });
     });
 
-    // 未來對接 Django 的 API 呼叫方法
     async function fetchRecordings() {
         loading.value = true;
         try {
-            // 目前先模擬延遲
-            await new Promise(resolve => setTimeout(resolve, 800));
-            // 未來範例：
-            // const response = await axios.get('/api/recordings/', { params: { search: searchQuery.value, type: selectedType.value } });
-            // items.value = response.data;
+            const response = await fetch('/api/videos/');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+                // 將 Django 的資料結構對應回前端預期的格式
+                items.value = data.map(v => {
+                    // 去除 Django 回傳的絕對主機位址，改由前端 proxy 處理，避免 COEP 跨域問題
+                    let videoUrl = v.file;
+                    if (videoUrl.includes('8000')) {
+                        videoUrl = new URL(videoUrl).pathname;
+                    }
+                    return {
+                        id: v.id,
+                        patientName: v.title || `API Video ${v.id}`,
+                        date: v.created_at ? v.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+                        type: 'Cloud Sync',
+                        videoUrl: videoUrl 
+                    };
+                });
+                // 自動選取第一個
+                selectedId.value = items.value[0].id;
+            } else {
+                console.warn('Django API 返回了空陣列');
+            }
         } catch (error) {
-            console.error('Failed to fetch recordings:', error);
+            console.error('Failed to fetch from Django API:', error);
+            // 發生錯誤時先不蓋掉原本的 Mock 資料，方便預覽
         } finally {
             loading.value = false;
+        }
+    }
+
+    async function saveClipToDatabase(clip) {
+        try {
+            let blobData;
+            if (clip.physicalBlobUrl) {
+                // 如果前端 FFmpeg 已成功生成實體剪輯，抓取這個 Blob
+                const response = await fetch(clip.physicalBlobUrl);
+                blobData = await response.blob();
+            } else {
+                // Fallback: 如果沒有實體剪輯，抓取原始影片檔案
+                const currentRec = currentRecording.value;
+                const response = await fetch(currentRec.videoUrl.split('#')[0]);
+                blobData = await response.blob();
+            }
+
+            // 打包成 FormData 發送給 Django
+            const formData = new FormData();
+            formData.append('title', `[片段] ${clip.name}`);
+            formData.append('file', blobData, `clip_${Date.now()}.mp4`);
+
+            const uploadRes = await fetch('/api/videos/', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!uploadRes.ok) throw new Error('上傳伺服器失敗');
+
+            // 重新向後端拉取最新清單，這會自動包含剛上傳的片段
+            await fetchRecordings();
+            
+            return { success: true, message: 'Saved to DB' };
+        } catch (error) {
+            console.error('儲存片段至資料庫時發生錯誤:', error);
+            throw error;
         }
     }
 
@@ -65,6 +122,7 @@ export const useRecordingsStore = defineStore('recordings', () => {
         currentRecording,
         filteredRecordings,
         fetchRecordings,
+        saveClipToDatabase,
         resetFilters
     };
 });

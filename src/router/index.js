@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/views/Login.vue';
 import ViewerUI from '@/views/ViewerUI.vue';
+import LiveViewUI from '@/views/LiveViewUI.vue';
 import ManagementUI from '@/views/ManagementUI.vue';
 import PatientUI from '@/views/PatientUI.vue';
 import { useUserStore } from '@/store/userStore';
@@ -11,6 +12,12 @@ const routes = [
         name: 'Login',
         component: Login,
         meta: { requiresAuth: false }
+    },
+    {
+        path: '/live',
+        name: 'LiveStream',
+        component: LiveViewUI,
+        meta: { requiresAuth: true, role: ['admin', 'staff'] }
     },
     {
         path: '/',

@@ -9,6 +9,14 @@ export default defineConfig(({ mode }) => {
         server: {
             port: 3000,
             host: '0.0.0.0',
+            headers: {
+                "Cross-Origin-Opener-Policy": "same-origin",
+                "Cross-Origin-Embedder-Policy": "require-corp",
+            },
+            proxy: {
+                '/api': 'http://127.0.0.1:8000',
+                '/media': 'http://127.0.0.1:8000'
+            }
         },
         plugins: [vue(), tailwindcss()],
         define: {
@@ -18,6 +26,9 @@ export default defineConfig(({ mode }) => {
             alias: {
                 '@': path.resolve(__dirname, './src'),
             }
+        },
+        optimizeDeps: {
+            exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
         }
     };
 });
