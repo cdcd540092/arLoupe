@@ -11,14 +11,19 @@
         </div>
         
         <div class="flex gap-4">
-          <button @click="captureFrame" class="px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-sm active:scale-95">
+          <button 
+            @click="captureFrame" 
+            :disabled="isOffline"
+            :class="isOffline ? 'opacity-40 cursor-not-allowed border-slate-200 dark:border-slate-800' : 'hover:bg-slate-50 dark:hover:bg-slate-700'"
+            class="px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-sm active:scale-95"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
             {{ t.live.captureFrame }}
           </button>
           <button 
             @click="toggleRecording" 
-            :disabled="isConverting"
-            :class="isConverting ? 'bg-amber-500 text-white shadow-amber-500/30' : isRecording ? 'bg-slate-800 hover:bg-slate-900 text-white shadow-slate-900/30' : 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/30'"
+            :disabled="isConverting || isOffline"
+            :class="isOffline ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 shadow-none cursor-not-allowed opacity-50' : isConverting ? 'bg-amber-500 text-white shadow-amber-500/30' : isRecording ? 'bg-slate-800 hover:bg-slate-900 text-white shadow-slate-900/30' : 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/30'"
             class="px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg flex items-center gap-2 active:scale-95 min-w-[180px] justify-center"
           >
             <template v-if="isConverting">
@@ -26,7 +31,7 @@
               {{ langStore.isZh ? '轉檔中...' : 'Converting...' }}
             </template>
             <template v-else>
-              <div v-if="!isRecording" class="w-2.5 h-2.5 bg-white rounded-full"></div>
+              <div v-if="!isRecording" class="w-2.5 h-2.5 bg-white rounded-full" :class="isOffline ? 'bg-slate-400 dark:bg-slate-600' : 'bg-white'"></div>
               <div v-else class="w-3 h-3 bg-red-500 rounded-sm animate-pulse"></div>
               {{ isRecording ? t.live.stopRecording : t.live.startRecording }}
             </template>
@@ -61,11 +66,11 @@
       <!-- Overlays -->
       <div class="absolute top-6 left-6 flex gap-3 z-10">
         <div class="px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-lg text-white text-xs font-black tracking-widest flex items-center gap-2 border border-white/10">
-          <span class="w-2 h-2 rounded-full animate-pulse" :class="isRecording ? 'bg-red-500' : 'bg-green-500'"></span>
-          {{ isRecording ? 'REC' : 'LIVE' }}
+          <span class="w-2 h-2 rounded-full" :class="isOffline ? 'bg-slate-500' : isRecording ? 'bg-red-500 animate-pulse' : 'bg-green-500 animate-pulse'"></span>
+          {{ isOffline ? 'OFFLINE' : isRecording ? 'REC' : 'LIVE' }}
         </div>
         <div class="px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-lg text-white text-xs font-bold tracking-widest border border-white/10 font-mono">
-          {{ isRecording ? formatTime(recordingSeconds) : currentTime }}
+          {{ isOffline ? '--:--:--' : isRecording ? formatTime(recordingSeconds) : currentTime }}
         </div>
       </div>
 
@@ -102,14 +107,13 @@ const isRecording = ref(false);
 const recordingSeconds = ref(0);
 let recTimer = null;
 
-// WebRTC 媒體伺服器配置 (例如 SRS, Janus, LiveKit 等標準 WHEP/WebRTC HTTP Egress 協定)
+// WebRTC 媒體伺服器配置 (使用 MediaMTX 提供的標準 WHEP 端點)
 const peerConnection = ref(null);
-const webrtcStreamUrl = ref('http://localhost:1985/rtc/v1/whep/?app=live&stream=livestream');
-const fallbackUrl = ref('/procedure_demo.mp4'); 
+const webrtcStreamUrl = ref('http://localhost:8889/arloupe/whep');
 
 const initWebRTC = async () => {
   if (!webrtcStreamUrl.value) {
-    useFallbackSimulator();
+    setDeviceOffline();
     return;
   }
 
@@ -153,19 +157,16 @@ const initWebRTC = async () => {
     
     console.log('🎉 [WebRTC] 1080p 60fps 低延遲醫療級串流已建立！');
   } catch (error) {
-    console.warn('⚠️ [WebRTC] 無法連接至邊緣 Media Server。自動啟用本地 1080p 60fps 模擬模式進行 Demo:', error.message);
-    useFallbackSimulator();
+    console.warn('⚠️ [WebRTC] 串流中斷或 Media Server 未啟動。顯示離線狀態:', error.message);
+    setDeviceOffline();
   }
 };
 
-const useFallbackSimulator = () => {
+const setDeviceOffline = () => {
+  isOffline.value = true;
   if (videoRef.value) {
-    isOffline.value = false;
     videoRef.value.srcObject = null;
-    videoRef.value.src = fallbackUrl.value;
-    videoRef.value.load();
-  } else {
-    isOffline.value = true;
+    videoRef.value.src = '';
   }
 };
 
