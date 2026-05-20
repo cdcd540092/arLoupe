@@ -60,6 +60,10 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600 mb-6"><path d="m2 2 20 20"/><path d="M10.41 10.41a2 2 0 1 1-2.83-2.83"/><path d="M13.87 13.88a2 2 0 0 1-2.97-2.83"/><path d="M13.87 7.05a5.5 5.5 0 0 0-7.78 0"/><path d="M17.41 17.41a5.5 5.5 0 0 1-7.78 0"/><path d="M20.95 20.95a10.5 10.5 0 0 1-14.85 0"/><path d="M20.95 3.05a10.5 10.5 0 0 0-14.85 0"/></svg>
           <h3 class="text-white font-black text-xl mb-2">{{ t.live.offline }}</h3>
           <p class="text-slate-400 font-bold max-w-sm">{{ t.live.offlineDesc }}</p>
+          <button @click="showTroubleshoot = true" class="mt-4 text-blue-400 hover:text-blue-300 font-bold text-sm underline transition-all flex items-center gap-1 active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            {{ langStore.isZh ? '排除連線問題步驟' : 'Troubleshooting Steps' }}
+          </button>
         </div>
       </div>
 
@@ -80,6 +84,69 @@
     </div>
     </div>
     </div>
+
+    <!-- Troubleshooting Modal -->
+    <div v-if="showTroubleshoot" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all duration-300">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative animate-in fade-in zoom-in duration-200">
+        <!-- Close Button -->
+        <button @click="showTroubleshoot = false" class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+
+        <!-- Header -->
+        <div class="flex items-center gap-3 mb-6">
+          <div class="p-2.5 bg-blue-500/10 text-blue-400 rounded-2xl">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div>
+            <h3 class="text-white font-black text-xl">{{ langStore.isZh ? 'arLoupe 連線問題排除步驟' : 'arLoupe Troubleshooting' }}</h3>
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-0.5">Connection Diagnostics</p>
+          </div>
+        </div>
+
+        <!-- Content Steps -->
+        <div class="space-y-4 text-slate-300 text-sm mb-6">
+          <div class="flex gap-3 items-start">
+            <span class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+            <div>
+              <h4 class="text-white font-bold mb-0.5">{{ langStore.isZh ? '檢查 arLoupe 眼鏡電源' : 'Check arLoupe Power' }}</h4>
+              <p class="text-slate-400 text-xs">{{ langStore.isZh ? '請確認鏡腳右側開關已開啟，且 LED 指示燈呈現藍色恆亮或綠色呼吸燈狀態。' : 'Verify the right arm power switch is ON and the LED light is glowing blue/green.' }}</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 items-start">
+            <span class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+            <div>
+              <h4 class="text-white font-bold mb-0.5">{{ langStore.isZh ? '檢查區域 Wi-Fi 網路連線' : 'Verify Local Wi-Fi Connection' }}</h4>
+              <p class="text-slate-400 text-xs">{{ langStore.isZh ? '眼鏡設備需與此台筆電連線至同一個 Wi-Fi 網域（例如 arLoupe-Local-Net）。' : 'Ensure both the glasses and this laptop are connected to the same local Wi-Fi network.' }}</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 items-start">
+            <span class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+            <div>
+              <h4 class="text-white font-bold mb-0.5">{{ langStore.isZh ? '確認 MediaMTX 伺服器已啟動' : 'Check MediaMTX Server Status' }}</h4>
+              <p class="text-slate-400 text-xs">{{ langStore.isZh ? '請在筆電執行資料夾內的 mediamtx.exe，並確認黑框畫面中顯示 "published" 串流已就緒。' : 'Launch mediamtx.exe on the laptop and verify the terminal displays the stream is "published".' }}</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 items-start">
+            <span class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">4</span>
+            <div>
+              <h4 class="text-white font-bold mb-0.5">{{ langStore.isZh ? '排解 CORS 跨網域阻擋' : 'Troubleshoot CORS Policy Block' }}</h4>
+              <p class="text-slate-400 text-xs">{{ langStore.isZh ? '若瀏覽器 Console 顯示 CORS 阻擋，請開啟 mediamtx.yml 將 "webrtcAllowOrigin" 修改為 "*" 後重啟服務。' : 'If F12 displays CORS blocks, update "webrtcAllowOrigin: \'*\'" inside mediamtx.yml and restart.' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Action -->
+        <div class="flex gap-3 justify-end">
+          <button @click="showTroubleshoot = false" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs transition-colors shadow-lg shadow-blue-500/20 active:scale-95">
+            {{ langStore.isZh ? '我已瞭解，關閉視窗' : 'Understood, Close' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 </template>
@@ -98,6 +165,7 @@ const videoRef = ref(null);
 const flash = ref(false);
 const isOffline = ref(false);
 const isConverting = ref(false);
+const showTroubleshoot = ref(false);
 
 const currentTime = ref('');
 let timer = null;
