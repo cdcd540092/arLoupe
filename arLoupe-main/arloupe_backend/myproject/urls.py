@@ -20,7 +20,6 @@ def serve_media_with_range(request, path, document_root=None):
     
     if RangedFileResponse:
         response = RangedFileResponse(request, open(filepath, 'rb'), content_type=content_type)
-        response['Content-Length'] = os.path.getsize(filepath)
         return response
     else:
         # Fallback 預設處理
