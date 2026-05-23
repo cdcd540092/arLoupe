@@ -11,6 +11,15 @@
           class="absolute inset-0 w-full h-full object-cover z-20"
         ></video>
 
+        <!-- X-Ray / Apical Overlay -->
+        <div v-if="overlayMode !== 'off'" class="absolute top-4 right-4 z-50 w-1/3 max-w-[300px] bg-black/80 p-1.5 rounded-xl shadow-2xl border border-white/20 backdrop-blur-md transition-all hover:scale-150 origin-top-right cursor-crosshair">
+           <img v-if="overlayMode === 'xray'" src="/xray.jpg" alt="X-Ray" class="w-full h-auto rounded-lg object-contain" />
+           <img v-else-if="overlayMode === 'apical'" src="/apical.jpg" alt="Apical" class="w-full h-auto rounded-lg object-contain" />
+           <div class="absolute bottom-3 left-3 bg-black/60 px-2 py-1 rounded text-[10px] text-white font-bold tracking-widest backdrop-blur-md border border-white/10">
+             {{ overlayMode === 'xray' ? '全口 X 光片' : '根尖片' }}
+           </div>
+        </div>
+
         <div v-if="!isPlaying" class="absolute inset-0 bg-black/40 z-30 flex items-center justify-center backdrop-blur-[2px]">
           <button @click="togglePlay" class="p-8 bg-blue-600/90 text-white rounded-full hover:scale-110 active:scale-90 transition-all shadow-2xl">
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
@@ -52,14 +61,28 @@
         </div>
       </div>
       
-      <div class="p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.834a.5.5 0 0 0-.777-.416L16 11"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+      <div class="p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20 shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.834a.5.5 0 0 0-.777-.416L16 11"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
           </div>
-          <div>
-            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[15px]">{{ recordingsStore.currentRecording?.patientName || 'Dental Procedure Recording' }}</h3>
-            <p class="text-[11px] font-bold text-slate-400 tracking-wider">{{ t.player.recorded }}: {{ recordingsStore.currentRecording?.date || '—' }} • {{ t.player.duration }}: {{ formatTime(duration) }}</p>
+          <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-5">
+            <div>
+              <h3 class="font-black text-slate-800 dark:text-slate-100 text-[16px] tracking-tight">{{ recordingsStore.currentRecording?.patientName || 'Dental Procedure Recording' }}</h3>
+              <p class="text-[11px] font-bold text-slate-400 tracking-wider mt-0.5">{{ t.player.recorded }}: {{ recordingsStore.currentRecording?.date || '—' }} • {{ t.player.duration }}: {{ formatTime(duration) }}</p>
+            </div>
+            
+            <div class="flex bg-slate-100 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-inner h-fit">
+              <button @click="overlayMode = 'off'" :class="overlayMode === 'off' ? 'bg-white dark:bg-slate-800 shadow text-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'" class="px-4 py-1.5 text-[11px] font-black rounded-md transition-all uppercase tracking-widest">關閉</button>
+              <button @click="overlayMode = 'xray'" :class="overlayMode === 'xray' ? 'bg-blue-600 shadow-md shadow-blue-600/30 text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'" class="px-4 py-1.5 text-[11px] font-black rounded-md transition-all uppercase tracking-widest flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                X光片
+              </button>
+              <button @click="overlayMode = 'apical'" :class="overlayMode === 'apical' ? 'bg-indigo-600 shadow-md shadow-indigo-600/30 text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'" class="px-4 py-1.5 text-[11px] font-black rounded-md transition-all uppercase tracking-widest flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                根尖片
+              </button>
+            </div>
           </div>
         </div>
         <div class="flex items-center gap-3">
@@ -188,6 +211,7 @@ const currentTime = ref(0);
 const duration = ref(0);
 const playbackSpeed = ref(1);
 const showClipEditor = ref(true);
+const overlayMode = ref('off');
 const clipStart = ref('00:00:00');
 const clipEnd = ref('00:00:00');
 const savedClips = ref([]);
