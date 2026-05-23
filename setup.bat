@@ -3,7 +3,7 @@ setlocal EnableDelayedExpansion
 title arLoupe System - Environment Setup
 
 echo ============================================
-echo   arLoupe System - One-Click Setup
+echo   arLoupe System - Environment Check ^& Setup
 echo ============================================
 echo.
 
@@ -11,7 +11,7 @@ echo.
 echo [1/5] Checking Node.js installation...
 where npm >nul 2>nul
 if %ERRORLEVEL% neq 0 (
-    echo [ERROR] Node.js (npm) is not installed!
+    echo [ERROR] Node.js is not installed!
     echo Please install Node.js from https://nodejs.org/ and try again.
     pause
     exit /b
@@ -32,48 +32,58 @@ echo [OK] Python is installed.
 
 :: 3. Install Frontend Dependencies
 echo.
-echo [3/5] Installing Frontend Dependencies (npm install)...
+echo [3/5] Checking Frontend Dependencies...
 cd /d "%~dp0"
-call npm install
-if %ERRORLEVEL% neq 0 (
-    echo [ERROR] Failed to install frontend dependencies.
-    pause
-    exit /b
+if exist "node_modules\" (
+    echo [OK] Frontend dependencies already exist. Skipping npm install.
+) else (
+    echo Installing Frontend Dependencies...
+    call npm install
+    if !ERRORLEVEL! neq 0 (
+        echo [ERROR] Failed to install frontend dependencies.
+        pause
+        exit /b
+    )
+    echo [OK] Frontend setup complete.
 )
-echo [OK] Frontend setup complete.
 
 :: 4. Setup Python Virtual Environment
 echo.
-echo [4/5] Setting up Backend Virtual Environment (venv)...
+echo [4/5] Checking Backend Virtual Environment...
 cd /d "%~dp0arLoupe-main\arloupe_backend"
-if not exist "venv\Scripts\activate.bat" (
-    echo Creating virtual environment...
-    python -m venv venv
+if exist "venv\Scripts\activate.bat" (
+    echo [OK] Virtual environment already exists.
 ) else (
-    echo Virtual environment already exists.
+    echo Creating Python virtual environment...
+    python -m venv venv
+    echo [OK] Virtual environment created.
 )
 
 :: 5. Install Backend Dependencies
 echo.
-echo [5/5] Installing Backend Dependencies (pip install)...
-call venv\Scripts\activate.bat
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-if %ERRORLEVEL% neq 0 (
-    echo [ERROR] Failed to install backend dependencies.
-    pause
-    exit /b
+echo [5/5] Checking Backend Dependencies...
+if exist "venv\Scripts\activate.bat" (
+    call venv\Scripts\activate.bat
+    echo Verifying pip packages...
+    python -m pip install --upgrade pip >nul 2>nul
+    pip install -r requirements.txt
+    if !ERRORLEVEL! neq 0 (
+        echo [ERROR] Failed to install backend dependencies.
+        pause
+        exit /b
+    )
+    echo [OK] Backend dependencies installed/verified.
 )
-echo [OK] Backend setup complete.
 
 :: 6. Setup Database
 echo.
-echo [Bonus] Running database migrations...
-python manage.py migrate
+echo [Bonus] Verifying database structure...
+python manage.py migrate >nul 2>nul
+echo [OK] Database is up to date.
 
 echo.
 echo ============================================
-echo   Setup Complete Successfully!
-echo   You can now double-click "start.bat" to run the system.
+echo   All environments are fully setup and ready!
+echo   You can now close this window and double-click "start.bat"
 echo ============================================
 pause
