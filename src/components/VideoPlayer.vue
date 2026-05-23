@@ -13,8 +13,8 @@
 
         <!-- X-Ray / Apical Overlay -->
         <div v-if="overlayMode !== 'off'" class="absolute top-4 right-4 z-50 w-1/3 max-w-[300px] bg-black/80 p-1.5 rounded-xl shadow-2xl border border-white/20 backdrop-blur-md transition-all hover:scale-150 origin-top-right cursor-crosshair">
-           <img v-if="overlayMode === 'xray'" src="/xray.jpg" alt="X-Ray" class="w-full h-auto rounded-lg object-contain" />
-           <img v-else-if="overlayMode === 'apical'" src="/apical.jpg" alt="Apical" class="w-full h-auto rounded-lg object-contain" />
+           <img v-if="overlayMode === 'xray'" :src="xrayImg" alt="X-Ray" class="w-full h-auto rounded-lg object-contain" />
+           <img v-else-if="overlayMode === 'apical'" :src="apicalImg" alt="Apical" class="w-full h-auto rounded-lg object-contain" />
            <div class="absolute bottom-3 left-3 bg-black/60 px-2 py-1 rounded text-[10px] text-white font-bold tracking-widest backdrop-blur-md border border-white/10">
              {{ overlayMode === 'xray' ? '全口 X 光片' : '根尖片' }}
            </div>
@@ -197,6 +197,8 @@ import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import { useLangStore } from '@/store/langStore';
 import { useRecordingsStore } from '@/store/recordingsStore';
+import xrayImg from '@/assets/xray.jpg';
+import apicalImg from '@/assets/apical.jpg';
 
 const langStore = useLangStore();
 const recordingsStore = useRecordingsStore();
