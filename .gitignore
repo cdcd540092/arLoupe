@@ -1,24 +1,11 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+arLoupe-main/arloupe_backend/venv/
+arLoupe-main/arloupe_backend/__pycache__/
+arLoupe-main/arloupe_backend/media/videos/live_*
+arLoupe-main/arloupe_backend/media/videos/clip_*
+arLoupe-main/arloupe_backend/media/videos/799*
+arLoupe-main/arloupe_backend/media/videos/e61*
+mediamtx_v1.16.3_windows_amd64/
+arloupe_data/
+arloupe_mock_server/
+.venv/
+__pycache__/
