@@ -268,25 +268,49 @@ const captureFrame = () => {
   a.click();
 };
 
+const PI5_API_BASE_URL = 'http://192.168.1.150:7000';
+
 const toggleRecording = async () => {
   if (isRecording.value) {
-    isRecording.value = false;
-    clearInterval(recTimer);
-    recordingSeconds.value = 0;
-    
-    // 發送停止錄影控制訊號至 Edge 工作站
-    console.log('📡 [Edge API] POST /api/edge/stop_recording');
-    alert(langStore.isZh ? '✅ 錄影指令已送出，Edge 端背景服務已將影片保存至伺服器。' : '✅ Recording stopped. Edge device has saved the video.');
-
+    try {
+      console.log(`📡 [Pi 5 API] 停止錄影: POST ${PI5_API_BASE_URL}/api/capture/stop`);
+      const res = await fetch(`${PI5_API_BASE_URL}/api/capture/stop`, { method: "POST" });
+      if (!res.ok) throw new Error('API Error: ' + await res.text());
+      
+      isRecording.value = false;
+      clearInterval(recTimer);
+      recordingSeconds.value = 0;
+      
+      alert(langStore.isZh ? '✅ 錄影指令已送出，設備即將進行影片上傳。' : '✅ Recording stopped. Device is uploading the video.');
+    } catch (err) {
+      console.error('停止錄影失敗', err);
+      alert('停止錄影失敗：' + err.message);
+    }
   } else {
-    isRecording.value = true;
-    recordingSeconds.value = 0;
-    recTimer = setInterval(() => {
-      recordingSeconds.value++;
-    }, 1000);
-    
-    // 發送開始錄影控制訊號至 Edge 工作站
-    console.log('📡 [Edge API] POST /api/edge/start_recording');
+    try {
+      const caseId = recordingsStore.currentRecording?.patientName || 'demo_case_001';
+      console.log(`📡 [Pi 5 API] 開始錄影: POST ${PI5_API_BASE_URL}/api/capture/start (case: ${caseId})`);
+      
+      const res = await fetch(`${PI5_API_BASE_URL}/api/capture/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          case_id: caseId.replace(/\s+/g, '_'),
+          operator_id: "arLoupe_Admin"
+        }),
+      });
+      if (!res.ok) throw new Error('API Error: ' + await res.text());
+      
+      isRecording.value = true;
+      recordingSeconds.value = 0;
+      recTimer = setInterval(() => {
+        recordingSeconds.value++;
+      }, 1000);
+      
+    } catch (err) {
+      console.error('開始錄影失敗', err);
+      alert('開始錄影失敗，請確認 Pi 5 設備連線狀態：\n' + err.message);
+    }
   }
 };
 
