@@ -12,7 +12,9 @@
         ></video>
 
         <!-- X-Ray / Apical Overlay -->
-        <div v-if="overlayMode !== 'off'" class="absolute top-4 right-4 z-50 w-1/3 max-w-[300px] bg-black/80 p-1.5 rounded-xl shadow-2xl border border-white/20 backdrop-blur-md transition-all hover:scale-150 origin-top-right cursor-crosshair">
+        <div v-if="overlayMode !== 'off'" 
+             class="absolute top-4 right-4 z-50 bg-black/80 p-1.5 rounded-xl shadow-2xl border border-white/20 backdrop-blur-md transition-all hover:scale-150 origin-top-right cursor-crosshair"
+             :class="overlayMode === 'xray' ? 'w-1/3 max-w-[350px]' : 'w-1/5 max-w-[180px]'">
            <img v-if="overlayMode === 'xray'" :src="xrayImg" alt="X-Ray" class="w-full h-auto rounded-lg object-contain" />
            <img v-else-if="overlayMode === 'apical'" :src="apicalImg" alt="Apical" class="w-full h-auto rounded-lg object-contain" />
            <div class="absolute bottom-3 left-3 bg-black/60 px-2 py-1 rounded text-[10px] text-white font-bold tracking-widest backdrop-blur-md border border-white/10">
