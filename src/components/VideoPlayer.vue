@@ -190,7 +190,7 @@ import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import { useLangStore } from '@/store/langStore';
 import { useRecordingsStore } from '@/store/recordingsStore';
-import xrayImg from '@/assets/xray.jpg';
+import xrayImg from '@/assets/xray.png';
 import apicalImg from '@/assets/apical.jpg';
 
 const langStore = useLangStore();
