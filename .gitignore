@@ -9,3 +9,7 @@ arloupe_data/
 arloupe_mock_server/
 .venv/
 __pycache__/
+
+# AI Agent Export Files
+antigravity_chat_export.*
+export_chat.py
