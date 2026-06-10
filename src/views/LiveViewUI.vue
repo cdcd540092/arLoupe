@@ -39,6 +39,24 @@
         </div>
       </header>
 
+      <!-- PMS 連動狀態列 -->
+      <div class="mb-6 p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex items-center">
+        <div class="flex items-center gap-4">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-indigo-900 dark:text-indigo-100 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              {{ langStore.isZh ? '已連線至 PMS 系統' : 'Connected to PMS' }}
+            </h3>
+            <p class="text-xs text-indigo-700/70 dark:text-indigo-400/70 font-medium mt-0.5">
+              {{ langStore.isZh ? `偵測到 ${recordingsStore.activePatientFromPMS.operatory} 活躍病患：${recordingsStore.activePatientFromPMS.patientName} (${recordingsStore.activePatientFromPMS.patientId})` : `Active patient in ${recordingsStore.activePatientFromPMS.operatory}: ${recordingsStore.activePatientFromPMS.patientName} (${recordingsStore.activePatientFromPMS.patientId})` }}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div class="flex-1 min-h-0 flex gap-6 relative">
         <!-- Capture Flash Effect -->
         <div v-if="flash" class="absolute inset-0 bg-white z-50 transition-opacity duration-150 pointer-events-none rounded-3xl" :class="flash ? 'opacity-70' : 'opacity-0'"></div>
@@ -281,15 +299,16 @@ const toggleRecording = async () => {
       clearInterval(recTimer);
       recordingSeconds.value = 0;
       
-      alert(langStore.isZh ? '✅ 錄影指令已送出，設備即將進行影片上傳。' : '✅ Recording stopped. Device is uploading the video.');
+      alert(langStore.isZh ? '✅ 錄影指令已送出，設備即將進行影片上傳並自動與病患資料關聯隔離儲存。' : '✅ Recording stopped. Device is uploading the video and auto-binding metadata.');
     } catch (err) {
       console.error('停止錄影失敗', err);
       alert('停止錄影失敗：' + err.message);
     }
   } else {
     try {
-      const caseId = recordingsStore.currentRecording?.patientName || 'demo_case_001';
-      console.log(`📡 [Pi 5 API] 開始錄影: POST ${PI5_API_BASE_URL}/api/capture/start (case: ${caseId})`);
+      const activePatient = recordingsStore.activePatientFromPMS;
+      const caseId = activePatient?.patientId || 'demo_case_001';
+      console.log(`📡 [Pi 5 API] 開始錄影: POST ${PI5_API_BASE_URL}/api/capture/start (case: ${caseId}, patient: ${activePatient?.patientName})`);
       
       const res = await fetch(`${PI5_API_BASE_URL}/api/capture/start`, {
         method: "POST",

@@ -101,7 +101,7 @@ export default {
         createPolicy: 'CREATE NEW POLICY',
         totalPatients: 'Total Patients',
         cloudStorage: 'Cloud Storage',
-        dailyScans: 'Daily Scans',
+        dailyScans: 'Videos Today',
         securityThreats: 'Security Threats',
         activeUsers: 'Active System Users',
         activeUsersDesc: 'Clinic Personnel & Staff Accounts',

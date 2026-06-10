@@ -50,20 +50,38 @@
     </div>
 
     <!-- User Profile -->
-    <div class="user-profile p-4 bg-slate-800/40 rounded-2xl border border-slate-700/50 flex items-center gap-4 group cursor-pointer hover:bg-slate-800/60 transition-all">
-      <div class="avatar w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-shadow p-0.5">
-        <div class="w-full h-full rounded-full bg-slate-800 flex items-center justify-center uppercase">
-          {{ userStore.user?.name?.charAt(0) || 'U' }}
+    <div class="relative">
+      <div @click="isProfileMenuOpen = !isProfileMenuOpen" class="user-profile p-4 bg-slate-800/40 rounded-2xl border border-slate-700/50 flex items-center gap-4 group cursor-pointer hover:bg-slate-800/60 transition-all">
+        <div class="avatar w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-shadow p-0.5">
+          <div class="w-full h-full rounded-full bg-slate-800 flex items-center justify-center uppercase">
+            {{ userStore.user?.name?.charAt(0) || 'U' }}
+          </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-bold truncate">{{ userStore.user?.name || 'Guest' }}</p>
+          <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{{ userStore.role || 'Visitor' }}</p>
+        </div>
+        <div class="text-slate-400 group-hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{'rotate-180': isProfileMenuOpen}" class="transition-transform duration-300"><polyline points="18 15 12 9 6 15"/></svg>
         </div>
       </div>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-bold truncate">{{ userStore.user?.name || 'Guest' }}</p>
-        <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{{ userStore.role || 'Visitor' }}</p>
+
+      <!-- Profile Menu Dropdown -->
+      <div v-if="isProfileMenuOpen" class="absolute bottom-full left-0 mb-3 w-full bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl py-2 z-50 overflow-hidden">
+        <button @click="openProfileModal" class="w-full px-4 py-3 text-left text-sm font-semibold text-slate-200 hover:bg-slate-700 hover:text-white flex items-center gap-3 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          {{ langStore.isZh ? '個人資訊設定' : 'Profile Settings' }}
+        </button>
+        <div class="h-px bg-slate-700 my-1"></div>
+        <button @click="userStore.logout(); $router.push('/login')" class="w-full px-4 py-3 text-left text-sm font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-3 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          {{ t.logout }}
+        </button>
       </div>
-      <button @click="userStore.logout(); $router.push('/login')" class="logout-btn p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors" :title="t.logout">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-      </button>
     </div>
+
+    <!-- User Profile Modal Component -->
+    <UserProfileModal v-if="isProfileModalOpen" @close="isProfileModalOpen = false" />
   </aside>
 </template>
 
@@ -71,10 +89,33 @@
 import { useUserStore } from '@/store/userStore';
 import { useLangStore } from '@/store/langStore';
 import { useThemeStore } from '@/store/themeStore';
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+import UserProfileModal from '@/components/UserProfileModal.vue';
 
 const userStore = useUserStore();
 const langStore = useLangStore();
 const themeStore = useThemeStore();
 const t = computed(() => langStore.t);
+
+const isProfileMenuOpen = ref(false);
+const isProfileModalOpen = ref(false);
+
+const openProfileModal = () => {
+  isProfileMenuOpen.value = false;
+  isProfileModalOpen.value = true;
+};
+
+// 點擊其他地方關閉選單
+const closeMenu = (e) => {
+  if (!e.target.closest('.user-profile') && !e.target.closest('.absolute')) {
+    isProfileMenuOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', closeMenu);
+});
+onUnmounted(() => {
+  document.removeEventListener('click', closeMenu);
+});
 </script>

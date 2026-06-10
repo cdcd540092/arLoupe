@@ -106,7 +106,7 @@ export default {
         createPolicy: '建立新策略',
         totalPatients: '病患總數',
         cloudStorage: '雲端儲存',
-        dailyScans: '每日掃描',
+        dailyScans: '今日錄影數',
         securityThreats: '安全威脅',
         activeUsers: '系統使用者',
         activeUsersDesc: '診所人員 & 員工帳號',

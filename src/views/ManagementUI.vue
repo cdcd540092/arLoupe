@@ -7,15 +7,23 @@
           <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{{ t.management.title }}</h1>
           <p class="text-sm font-bold text-slate-400 mt-1 uppercase tracking-widest">{{ t.management.subtitle }}</p>
         </div>
-        <div class="flex gap-4">
-           <button class="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-           </button>
-           <button v-if="false" class="bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-8 rounded-2xl shadow-xl shadow-blue-500/20 active:scale-95 transition-all">{{ t.management.createPolicy }}</button>
-        </div>
       </header>
       
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <!-- Tabs -->
+      <div class="mb-8 flex gap-2 border-b border-slate-200 dark:border-slate-700">
+        <button @click="activeTab = 'Overview'" class="px-6 py-3 font-bold text-sm border-b-2 transition-colors uppercase tracking-wider" :class="activeTab === 'Overview' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'">
+          {{ langStore.isZh ? '數據總覽與人員' : 'Overview & Users' }}
+        </button>
+        <button @click="activeTab = 'Audit'" class="px-6 py-3 font-bold text-sm border-b-2 transition-colors uppercase tracking-wider" :class="activeTab === 'Audit' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'">
+          {{ langStore.isZh ? '稽核紀錄' : 'Audit Logs' }}
+        </button>
+        <button @click="activeTab = 'Settings'" class="px-6 py-3 font-bold text-sm border-b-2 transition-colors uppercase tracking-wider" :class="activeTab === 'Settings' ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'">
+          {{ langStore.isZh ? '系統設定' : 'System Settings' }}
+        </button>
+      </div>
+      
+      <!-- Overview Tab -->
+      <div v-show="activeTab === 'Overview'" class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div class="xl:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
           <div v-for="stat in statsDisplay" :key="stat.label" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 group hover:border-blue-500 transition-all">
              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ stat.label }}</p>
@@ -28,16 +36,7 @@
         </div>
 
         <div class="xl:col-span-2 space-y-8">
-          <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div class="p-8 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-              <div>
-                <h2 class="text-xl font-black text-slate-800 dark:text-white">{{ t.management.activeUsers }}</h2>
-                <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">{{ t.management.activeUsersDesc }}</p>
-              </div>
-              <button class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-all font-bold text-xs px-4">{{ t.management.viewAll }}</button>
-            </div>
-            <AuditTable />
-          </div>
+          <UserManagementTable />
         </div>
 
         <div class="xl:col-span-1 space-y-8">
@@ -72,18 +71,41 @@
           </div>
         </div>
       </div>
+
+      <!-- Audit Tab -->
+      <div v-show="activeTab === 'Audit'" class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="p-8 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-black text-slate-800 dark:text-white">{{ langStore.isZh ? '系統操作稽核紀錄' : 'System Audit Logs' }}</h2>
+            <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">HIPAA Compliance Tracking</p>
+          </div>
+          <button class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-all font-bold text-xs px-4">{{ langStore.isZh ? '匯出 CSV' : 'Export CSV' }}</button>
+        </div>
+        <AuditTable />
+      </div>
+
+      <!-- Settings Tab -->
+      <div v-show="activeTab === 'Settings'" class="space-y-6">
+        <SystemSettings />
+      </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import Sidebar from '@/components/Sidebar.vue';
 import AuditTable from '@/components/AuditTable.vue';
+import UserManagementTable from '@/components/management/UserManagementTable.vue';
+import SystemSettings from '@/components/management/SystemSettings.vue';
 import { useLangStore } from '@/store/langStore';
+
+const activeTab = ref('Overview');
 
 const langStore = useLangStore();
 const t = computed(() => langStore.t);
+
+const policiesState = ref([true, true, true, false]);
 
 const statsDisplay = computed(() => [
   { label: t.value.management.totalPatients, value: '1,284', change: 12 },

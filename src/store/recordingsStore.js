@@ -4,13 +4,21 @@ import { ref, computed } from 'vue';
 export const useRecordingsStore = defineStore('recordings', () => {
     // 原始數據
     const items = ref([
-        { id: 1, patientName: 'John Doe (P-101)', date: '2026-04-07', type: 'Cleaning', videoUrl: '/procedure_demo.mp4' },
-        { id: 2, patientName: 'Alice Smith (P-992)', date: '2026-04-06', type: 'Extraction', videoUrl: '/procedure_demo.mp4' },
-        { id: 3, patientName: 'Bob Wilson (P-342)', date: '2026-03-31', type: 'Implant', videoUrl: '/procedure_demo.mp4' },
-        { id: 4, patientName: 'Sarah Connor (P-887)', date: '2026-03-30', type: 'Cleaning', videoUrl: '/procedure_demo.mp4' },
-        { id: 5, patientName: 'Michael Corleone (P-554)', date: '2026-04-08', type: 'Implant', videoUrl: '/procedure_demo.mp4' },
-        { id: 6, patientName: 'Ellen Ripley (P-776)', date: '2026-04-09', type: 'Cleaning', videoUrl: '/procedure_demo.mp4' }
+        { id: 1, patientName: 'John Doe', patientId: 'P-101', date: '2026-04-07', time: '14:30', operatory: 'Op 1', procedures: 'Cleaning', tags: ['High Risk', 'Bleeding'], markers: [], videoUrl: '/procedure_demo.mp4' },
+        { id: 2, patientName: 'Alice Smith', patientId: 'P-992', date: '2026-04-06', time: '09:15', operatory: 'Op 2', procedures: 'Extraction', tags: ['Routine'], markers: [], videoUrl: '/procedure_demo.mp4' },
+        { id: 3, patientName: 'Bob Wilson', patientId: 'P-342', date: '2026-03-31', time: '11:00', operatory: 'Op 1', procedures: 'Implant', tags: [], markers: [], videoUrl: '/procedure_demo.mp4' },
+        { id: 4, patientName: 'Sarah Connor', patientId: 'P-887', date: '2026-03-30', time: '16:45', operatory: 'Op 3', procedures: 'Cleaning', tags: ['Allergy'], markers: [], videoUrl: '/procedure_demo.mp4' },
+        { id: 5, patientName: 'Michael Corleone', patientId: 'P-554', date: '2026-04-08', time: '10:00', operatory: 'Op 1', procedures: 'Implant', tags: [], markers: [], videoUrl: '/procedure_demo.mp4' },
+        { id: 6, patientName: 'Ellen Ripley', patientId: 'P-776', date: '2026-04-09', time: '13:20', operatory: 'Op 2', procedures: 'Cleaning', tags: [], markers: [], videoUrl: '/procedure_demo.mp4' }
     ]);
+
+    // 模擬 PMS 系統自動帶入的當前活躍病患
+    const activePatientFromPMS = ref({
+        patientName: '王大明',
+        patientId: 'P-101',
+        operatory: 'Op 1',
+        procedures: 'Root Canal'
+    });
 
     const loading = ref(false);
     const searchQuery = ref('');
@@ -26,8 +34,9 @@ export const useRecordingsStore = defineStore('recordings', () => {
     // 過濾後的清單
     const filteredRecordings = computed(() => {
         return items.value.filter(item => {
-            const matchesSearch = item.patientName.toLowerCase().includes(searchQuery.value.toLowerCase());
-            const matchesType = selectedType.value === 'All' || item.type === selectedType.value;
+            const matchesSearch = item.patientName.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+                                  (item.patientId && item.patientId.toLowerCase().includes(searchQuery.value.toLowerCase()));
+            const matchesType = selectedType.value === 'All' || item.procedures === selectedType.value;
             const matchesDate = !selectedDate.value || item.date === selectedDate.value;
             return matchesSearch && matchesType && matchesDate;
         });
@@ -49,11 +58,39 @@ export const useRecordingsStore = defineStore('recordings', () => {
                     if (videoUrl.includes('8000')) {
                         videoUrl = new URL(videoUrl).pathname;
                     }
+                    let title = v.title || `API Video ${v.id}`;
+                    let parsedPatientName = title;
+                    let parsedPatientId = 'Unknown';
+                    let parsedProcedures = 'Cloud Sync';
+                    let parsedDate = v.created_at ? v.created_at.split('T')[0] : new Date().toISOString().split('T')[0];
+                    let parsedOperatory = 'Op 1'; // 預設給個診間
+                    
+                    // 嘗試解析格式：李明輝_P-554_根管治療_20260520
+                    if (title.includes('_')) {
+                        const parts = title.split('_');
+                        if (parts.length >= 3) {
+                            parsedPatientName = parts[0];
+                            parsedPatientId = parts[1];
+                            parsedProcedures = parts[2];
+                            if (parts.length >= 4) {
+                                const dateStr = parts[3];
+                                if (dateStr.length === 8) {
+                                    parsedDate = `${dateStr.substring(0,4)}-${dateStr.substring(4,6)}-${dateStr.substring(6,8)}`;
+                                }
+                            }
+                        }
+                    }
+
                     return {
                         id: v.id,
-                        patientName: v.title || `API Video ${v.id}`,
-                        date: v.created_at ? v.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
-                        type: 'Cloud Sync',
+                        patientName: parsedPatientName,
+                        patientId: parsedPatientId,
+                        date: parsedDate,
+                        time: v.created_at ? v.created_at.split('T')[1].substring(0, 5) : '00:00',
+                        operatory: parsedOperatory,
+                        procedures: parsedProcedures,
+                        tags: [],
+                        markers: [],
                         videoUrl: videoUrl 
                     };
                 });
@@ -120,6 +157,7 @@ export const useRecordingsStore = defineStore('recordings', () => {
         selectedDate,
         selectedId,
         currentRecording,
+        activePatientFromPMS,
         filteredRecordings,
         fetchRecordings,
         saveClipToDatabase,
