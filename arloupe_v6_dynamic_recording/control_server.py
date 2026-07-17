@@ -1,4 +1,12 @@
-"""Pi 5 control API for streaming and recording."""
+"""Pi 5 control API for streaming and recording.
+
+Manual stream version:
+- Starting this FastAPI server does NOT start GStreamer.
+- POST /api/stream/start starts the base streaming pipeline.
+- POST /api/stream/stop stops the streaming pipeline when not recording.
+- POST /api/capture/start auto-starts streaming first if needed, then starts recording.
+- POST /api/capture/stop stops recording only; streaming remains running.
+"""
 
 from __future__ import annotations
 
@@ -26,6 +34,7 @@ app.add_middleware(
 )
 
 # Singleton controller instance.
+# None means the GStreamer pipeline is not running.
 controller: Optional[DynamicCaptureController] = None
 
 # Prevent concurrent start/stop operations.
@@ -38,13 +47,66 @@ class StartRecordingRequest(BaseModel):
     operator_id: str | None = None
 
 
-@app.on_event("startup")
-def on_startup():
-    """Initialize the controller and start the permanent stream."""
+def _controller_status() -> dict:
+    """Build a safe status response whether the pipeline exists or not."""
     global controller
 
-    controller = DynamicCaptureController()
-    controller.start_streaming()
+    streaming = controller is not None
+    recording = False
+    session_id = None
+    recording_date = None
+
+    if controller is not None and controller._recording is not None:
+        recording = True
+        session_id = controller._recording.ctx.session_id
+        recording_date = controller._recording.ctx.recording_date
+
+    return {
+        "device_id": config.DEVICE_ID,
+        "streaming": streaming,
+        "recording": recording,
+        "session_id": session_id,
+        "recording_date": recording_date,
+        "stream_path": config.STREAM_PATH,
+        "media_server_ip": config.MEDIA_SERVER_IP,
+        "srt_port": config.SRT_PORT,
+    }
+
+
+def _start_streaming_locked() -> dict:
+    """Create controller and start base streaming pipeline. Caller must hold lock."""
+    global controller
+
+    if controller is not None:
+        return {
+            "status": "stream_already_running",
+            **_controller_status(),
+        }
+
+    new_controller = DynamicCaptureController()
+    try:
+        new_controller.start_streaming()
+    except Exception:
+        # Avoid keeping a half-created controller if GStreamer startup fails.
+        try:
+            new_controller.shutdown()
+        except Exception:
+            pass
+        raise
+
+    controller = new_controller
+
+    return {
+        "status": "stream_started",
+        **_controller_status(),
+    }
+
+
+@app.on_event("startup")
+def on_startup():
+    """Start the API only. Do not start GStreamer here."""
+    print("[INFO] arLoupe Pi5 Control API started")
+    print("[INFO] Stream is idle. Use POST /api/stream/start to start streaming.")
 
 
 @app.on_event("shutdown")
@@ -52,8 +114,10 @@ def on_shutdown():
     """Stop recording and streaming on shutdown."""
     global controller
 
-    if controller is not None:
-        controller.shutdown()
+    with control_lock:
+        if controller is not None:
+            controller.shutdown()
+            controller = None
 
 
 @app.get("/")
@@ -62,72 +126,128 @@ def root():
         "status": "ok",
         "service": "arLoupe Pi5 Control API",
         "device_id": config.DEVICE_ID,
+        "streaming_auto_start": False,
     }
 
 
 @app.get("/api/capture/status")
 def get_status():
     """Return the current Pi 5 capture status."""
-    if controller is None:
-        raise HTTPException(status_code=503, detail="Controller not ready")
+    return _controller_status()
 
-    recording = controller._recording is not None
 
-    session_id = None
-    recording_date = None
+@app.post("/api/stream/start")
+def start_stream():
+    """Start the base streaming pipeline."""
+    with control_lock:
+        try:
+            return _start_streaming_locked()
+        except Exception as exc:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to start stream: {exc}",
+            )
 
-    if recording:
-        session_id = controller._recording.ctx.session_id
-        recording_date = controller._recording.ctx.recording_date
 
-    return {
-        "device_id": config.DEVICE_ID,
-        "streaming": True,
-        "recording": recording,
-        "session_id": session_id,
-        "recording_date": recording_date,
-    }
+@app.post("/api/stream/stop")
+def stop_stream():
+    """Stop the base streaming pipeline.
+
+    Recording depends on the base pipeline, so stream cannot be stopped while
+    recording is active.
+    """
+    global controller
+
+    with control_lock:
+        if controller is None:
+            return {
+                "status": "stream_already_stopped",
+                **_controller_status(),
+            }
+
+        if controller._recording is not None:
+            raise HTTPException(
+                status_code=409,
+                detail="Recording is running. Stop recording before stopping stream.",
+            )
+
+        controller.shutdown()
+        controller = None
+
+        return {
+            "status": "stream_stopped",
+            **_controller_status(),
+        }
 
 
 @app.post("/api/capture/start")
 def start_recording(req: StartRecordingRequest):
-    """Start recording."""
-    if controller is None:
-        raise HTTPException(status_code=503, detail="Controller not ready")
+    """Start recording.
+
+    If streaming is not running, this endpoint starts the base streaming pipeline
+    first, then attaches the recording branch.
+    """
+    global controller
 
     with control_lock:
-        if controller._recording is not None:
-            raise HTTPException(
-                status_code=409,
-                detail="Recording is already running",
-            )
+        try:
+            if controller is None:
+                _start_streaming_locked()
 
-        controller.start_recording()
+            if controller is None:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Controller not available after stream startup",
+                )
 
-        session = controller._recording
-        if session is None:
+            if controller._recording is not None:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Recording is already running",
+                )
+
+            controller.start_recording()
+
+            session = controller._recording
+            if session is None:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to start recording",
+                )
+
+            return {
+                "status": "recording_started",
+                "device_id": config.DEVICE_ID,
+                "streaming": True,
+                "recording": True,
+                "session_id": session.ctx.session_id,
+                "recording_date": session.ctx.recording_date,
+                "case_id": req.case_id,
+                "operator_id": req.operator_id,
+            }
+
+        except HTTPException:
+            raise
+        except Exception as exc:
             raise HTTPException(
                 status_code=500,
-                detail="Failed to start recording",
+                detail=f"Failed to start recording: {exc}",
             )
-
-        return {
-            "status": "recording_started",
-            "device_id": config.DEVICE_ID,
-            "session_id": session.ctx.session_id,
-            "recording_date": session.ctx.recording_date,
-            "case_id": req.case_id,
-            "operator_id": req.operator_id,
-        }
 
 
 @app.post("/api/capture/stop")
 def stop_recording():
-    """Stop recording after the MP4 finalize step completes."""
+    """Stop recording after the MP4 finalize step completes.
+
+    Streaming remains running after recording stops.
+    """
     if controller is None:
-        raise HTTPException(status_code=503, detail="Controller not ready")
+        raise HTTPException(status_code=409, detail="Stream is not running")
 
     with control_lock:
+        if controller is None:
+            raise HTTPException(status_code=409, detail="Stream is not running")
+
         if controller._recording is None:
             raise HTTPException(
                 status_code=409,
@@ -137,11 +257,19 @@ def stop_recording():
         session_id = controller._recording.ctx.session_id
         recording_date = controller._recording.ctx.recording_date
 
-        controller.stop_recording()
+        try:
+            controller.stop_recording()
+        except Exception as exc:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to stop recording: {exc}",
+            )
 
         return {
             "status": "recording_stopped",
             "device_id": config.DEVICE_ID,
+            "streaming": True,
+            "recording": False,
             "session_id": session_id,
             "recording_date": recording_date,
         }

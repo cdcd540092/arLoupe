@@ -1,0 +1,1756 @@
+/**
+ * arLoupe + Tabler 自訂樣式
+ *
+ * Tabler 負責基本的版面、Card、按鈕、表單與響應式功能。
+ * 本檔只處理 arLoupe 特有的畫面與舊功能相容樣式。
+ */
+
+:root {
+  --arloupe-ok: #15803d;
+  --arloupe-warn: #b45309;
+  --arloupe-danger: #b91c1c;
+  --arloupe-border: #d9dee7;
+}
+
+body {
+  font-family:
+    Arial,
+    "Microsoft JhengHei",
+    "Noto Sans TC",
+    sans-serif;
+  background: #f4f6fa;
+}
+
+/* ---------------------------------------------------------
+ * 品牌與頁首
+ * --------------------------------------------------------- */
+
+.navbar-brand {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.brand-mark {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+  background: #206bc4;
+  border-radius: 0.65rem;
+}
+
+.brand-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.topbar-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.page-description {
+  min-height: 1.5rem;
+}
+
+/* ---------------------------------------------------------
+ * 單頁式導覽
+ * --------------------------------------------------------- */
+
+.arloupe-page {
+  display: none;
+}
+
+.arloupe-page.active {
+  display: block;
+}
+
+/* Dashboard 的 list-group 按鈕維持靠左 */
+.list-group-item[type="button"] {
+  text-align: left;
+}
+
+/* ---------------------------------------------------------
+ * 狀態顯示
+ * --------------------------------------------------------- */
+
+.status-card .card-body {
+  min-height: 8.5rem;
+}
+
+.status-value {
+  margin-top: 0.35rem;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.status-text {
+  margin-top: 0.35rem;
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.status-detail {
+  margin-top: 0.75rem;
+  overflow-wrap: anywhere;
+  color: var(--tblr-secondary);
+}
+
+.dashboard-detail-value {
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.ok {
+  color: var(--arloupe-ok) !important;
+  font-weight: 700;
+}
+
+.warn {
+  color: var(--arloupe-warn) !important;
+  font-weight: 700;
+}
+
+.danger {
+  color: var(--arloupe-danger) !important;
+  font-weight: 700;
+}
+
+.status-badge {
+  color: #4b5563;
+  background: #f3f4f6;
+}
+
+.status-badge.ok {
+  color: #166534 !important;
+  background: #dcfce7;
+}
+
+.status-badge.warn {
+  color: #92400e !important;
+  background: #fef3c7;
+}
+
+.status-badge.danger {
+  color: #991b1b !important;
+  background: #fee2e2;
+}
+
+.message-line {
+  min-height: 1.5rem;
+  overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------
+ * 共用按鈕排列
+ * --------------------------------------------------------- */
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* 舊程式動態產生的 class 相容 */
+.primary {
+  color: #fff !important;
+  background: var(--tblr-primary) !important;
+  border-color: var(--tblr-primary) !important;
+}
+
+.dangerBtn {
+  color: var(--tblr-danger) !important;
+  background: transparent !important;
+  border-color: var(--tblr-danger) !important;
+}
+
+/* ---------------------------------------------------------
+ * 即時影像
+ * --------------------------------------------------------- */
+
+.streamBox {
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius-lg);
+}
+
+.streamBox iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  background: #000;
+}
+
+/* ---------------------------------------------------------
+ * Wi-Fi
+ * --------------------------------------------------------- */
+
+.wifiList {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.wifiCard {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius-lg);
+  box-shadow: var(--tblr-box-shadow-card);
+}
+
+.wifiCard.active {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.wifiHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ssid {
+  overflow-wrap: anywhere;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.wifiMeta {
+  margin-top: 0.75rem;
+  color: var(--tblr-secondary);
+  font-size: 0.875rem;
+}
+
+.passwordPanel {
+  display: none;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: var(--tblr-bg-surface-secondary);
+  border-radius: var(--tblr-border-radius);
+}
+
+.jobBox dd {
+  overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------
+ * Pill / Badge 相容
+ * --------------------------------------------------------- */
+
+.pill {
+  display: inline-block;
+  padding: 0.25rem 0.55rem;
+  margin: 0.125rem 0.25rem 0.125rem 0;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  border-radius: 999px;
+}
+
+.okPill {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.warnPill {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.grayPill {
+  color: #4b5563;
+  background: #f3f4f6;
+}
+
+/* ---------------------------------------------------------
+ * 錄影檔案
+ * --------------------------------------------------------- */
+
+.videoToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.videoToolbar .form-select {
+  width: auto;
+  min-width: 14rem;
+}
+
+.videoList {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.videoDate {
+  margin-top: 0.75rem;
+  color: var(--tblr-secondary);
+  font-weight: 700;
+}
+
+.sessionCard {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius-lg);
+}
+
+.sessionCard summary {
+  padding: 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.sessionCard summary::-webkit-details-marker {
+  display: none;
+}
+
+.sessionSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sessionTitle {
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sessionMeta {
+  margin-top: 0.35rem;
+  color: var(--tblr-secondary);
+  font-size: 0.875rem;
+}
+
+.sessionBody {
+  padding: 0.25rem 1rem 1rem;
+  background: #fbfdff;
+  border-top: 1px solid var(--tblr-border-color);
+}
+
+.videoCard {
+  padding: 1rem;
+  margin-top: 0.75rem;
+  background: #fff;
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius);
+}
+
+.videoHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.videoTitle {
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.videoMeta {
+  margin-top: 0.5rem;
+  color: var(--tblr-secondary);
+  font-size: 0.875rem;
+}
+
+.videoPanel,
+.metaPanel {
+  display: none;
+  margin-top: 1rem;
+}
+
+.videoPanel video {
+  width: 100%;
+  max-height: 640px;
+  background: #000;
+  border-radius: var(--tblr-border-radius);
+}
+
+/* ---------------------------------------------------------
+ * BLE
+ * --------------------------------------------------------- */
+
+.bleGrid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(230px, 1fr)
+  );
+  gap: 1rem;
+}
+
+.bleGroup {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius-lg);
+  box-shadow: var(--tblr-box-shadow-card);
+}
+
+.bleGroupDanger {
+  border-color: #fecaca;
+}
+
+.bleGroupTitle {
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------
+ * 儲存清理
+ * --------------------------------------------------------- */
+
+.cleanupList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cleanupItem {
+  padding: 0.85rem;
+  background: #fff;
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius);
+}
+
+.cleanupItemTitle {
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------
+ * 詳細資料
+ * --------------------------------------------------------- */
+
+details > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+pre {
+  max-height: 520px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+  overflow: auto;
+  color: #f8fafc;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #182433;
+  border-radius: var(--tblr-border-radius);
+}
+
+/* ---------------------------------------------------------
+ * 小螢幕
+ * --------------------------------------------------------- */
+
+@media (max-width: 767.98px) {
+
+  .videoToolbar .form-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .topbar-title {
+    font-size: 1rem;
+  }
+
+  .status-badge {
+    display: none;
+  }
+}
+
+
+/* ---------------------------------------------------------
+ * arLoupe 首頁裝置控制列
+ * --------------------------------------------------------- */
+
+.deviceControlRow {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(110px, 1fr)
+  );
+  gap: 0.65rem;
+}
+
+.deviceControlRow .btn {
+  min-height: 2.75rem;
+  white-space: normal;
+}
+
+.device-status-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+  overflow-wrap: anywhere;
+}
+
+.device-status-separator {
+  color: var(--tblr-border-color);
+}
+
+@media (max-width: 767.98px) {
+  .device-status-summary {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}
+
+
+/* ---------------------------------------------------------
+ * arLoupe 首頁：緊湊串流與錄影控制
+ * --------------------------------------------------------- */
+
+/* arLoupe 首頁不再重複顯示頁面說明，節省垂直空間 */
+body[data-current-page="arloupe"] .page-header {
+  display: none;
+}
+
+body[data-current-page="arloupe"] .page-body {
+  margin-top: 0.75rem;
+}
+
+body[data-current-page="arloupe"] [data-page="arloupe"] .row-cards {
+  --tblr-gutter-y: 0.75rem;
+}
+
+.capture-control-card .card-body {
+  padding: 0.65rem 0.85rem;
+}
+
+.capture-control-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.capture-status-list {
+  display: flex;
+  flex: 1 1 34rem;
+  flex-wrap: wrap;
+  gap: 0.45rem 1.1rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.capture-status-item {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+  min-width: 5.5rem;
+}
+
+.capture-status-label {
+  color: var(--tblr-secondary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.capture-status-value {
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.capture-status-meta {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+  max-width: 24rem;
+}
+
+.capture-status-meta .capture-status-value {
+  max-width: 18rem;
+}
+
+.capture-control-buttons {
+  flex: 0 1 auto;
+  gap: 0.35rem;
+}
+
+.capture-control-buttons .btn {
+  padding: 0.3rem 0.55rem;
+}
+
+.compact-message {
+  min-height: 0;
+  font-size: 0.825rem;
+}
+
+.compact-message:empty {
+  display: none;
+}
+
+/* ---------------------------------------------------------
+ * arLoupe 首頁：串流畫面盡量填滿剩餘視窗
+ * --------------------------------------------------------- */
+
+.stream-card .card-header {
+  min-height: auto;
+  padding: 0.45rem 0.7rem;
+}
+
+.stream-card .card-body {
+  padding: 0.45rem;
+}
+
+.stream-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.stream-url-badge {
+  display: inline-block;
+  max-width: 20rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * 高度同時受到兩個條件限制：
+ * 1. 不超過目前瀏覽器視窗扣除頁首與控制列後的剩餘高度。
+ * 2. 不超過可用內容寬度的 16:9 高度。
+ *
+ * 因此在 1920x1080 或一般筆電畫面上，不需要往下捲動
+ * 才能看到完整的串流框。
+ */
+.streamBox {
+  height: min(
+    calc(100vh - 245px),
+    calc((100vw - 310px) * 0.5625)
+  );
+  min-height: 320px;
+  max-height: 760px;
+}
+
+.streamBox iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+/* 串流狀態訊息沒有內容時不佔空間 */
+#streamViewerMessage:empty {
+  display: none;
+}
+
+@media (max-width: 1199.98px) {
+  .streamBox {
+    height: min(
+      calc(100vh - 270px),
+      calc((100vw - 80px) * 0.5625)
+    );
+  }
+
+  .stream-url-badge {
+    display: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .capture-control-layout {
+    align-items: stretch;
+  }
+
+  .capture-status-list {
+    flex-basis: 100%;
+    gap: 0.4rem 0.75rem;
+  }
+
+  .capture-status-item {
+    min-width: calc(50% - 0.5rem);
+  }
+
+  .capture-status-meta {
+    max-width: none;
+  }
+
+  .capture-control-buttons {
+    flex-basis: 100%;
+  }
+
+  .capture-control-buttons .btn {
+    flex: 1 1 7rem;
+  }
+
+  .stream-card .card-header {
+    align-items: flex-start;
+  }
+
+  .stream-card-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .streamBox {
+    height: 56.25vw;
+    min-height: 230px;
+    max-height: calc(100vh - 330px);
+  }
+}
+
+
+/* ---------------------------------------------------------
+ * v4：即時畫面與裝置控制同時顯示
+ * --------------------------------------------------------- */
+
+/*
+ * 整個主操作區使用剩餘視窗高度。
+ * 上方只保留頂部列與緊湊的串流／錄影控制列。
+ */
+body[data-current-page="arloupe"] .arloupe-main-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 0.75rem;
+  height: calc(100vh - 190px);
+  min-height: 430px;
+  max-height: 820px;
+}
+
+/* 左右兩張卡片都填滿同一高度 */
+body[data-current-page="arloupe"] .stream-card,
+body[data-current-page="arloupe"] .device-control-card {
+  min-width: 0;
+  height: 100%;
+}
+
+/* 串流卡改用 Flex，畫面自動填滿剩餘高度 */
+body[data-current-page="arloupe"] .stream-card {
+  display: flex;
+  flex-direction: column;
+}
+
+body[data-current-page="arloupe"] .stream-card .card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.4rem;
+}
+
+body[data-current-page="arloupe"] .streamBox {
+  flex: 1 1 auto;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
+
+body[data-current-page="arloupe"] .streamBox iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+/* 右側裝置控制卡 */
+.device-control-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.device-control-header {
+  min-height: auto;
+  padding: 0.45rem 0.6rem;
+}
+
+.device-status-line {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+}
+
+.device-last-command {
+  max-width: 7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.device-control-card .card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.55rem;
+}
+
+/* 九顆按鈕排成三欄，減少垂直高度 */
+.deviceControlGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.deviceControlGrid .btn {
+  min-width: 0;
+  min-height: 2.25rem;
+  padding: 0.25rem 0.35rem;
+  overflow: hidden;
+  font-size: 0.76rem;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+.device-message {
+  max-height: 3.1rem;
+  overflow: auto;
+  font-size: 0.75rem;
+}
+
+.deviceUtilityRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-top: auto;
+}
+
+.deviceUtilityRow .btn {
+  padding: 0.25rem 0.35rem;
+  font-size: 0.75rem;
+}
+
+.device-details {
+  font-size: 0.75rem;
+}
+
+.device-details summary {
+  font-size: 0.75rem;
+}
+
+.device-details pre {
+  max-height: 180px;
+  margin-top: 0.4rem;
+  padding: 0.55rem;
+  font-size: 0.7rem;
+}
+
+/*
+ * v3 曾用寬度與 16:9 比例限制串流高度；
+ * v4 改由主操作區高度控制，因此覆寫為自動填滿。
+ */
+body[data-current-page="arloupe"] .streamBox {
+  height: auto !important;
+}
+
+/* 中型螢幕仍維持左右配置，但控制欄稍窄 */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  body[data-current-page="arloupe"] .arloupe-main-layout {
+    grid-template-columns: minmax(0, 1fr) 250px;
+    height: calc(100vh - 205px);
+  }
+
+  .deviceControlGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 平板與手機才改成上下排列 */
+@media (max-width: 991.98px) {
+  body[data-current-page="arloupe"] .arloupe-main-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    height: auto;
+    max-height: none;
+  }
+
+  body[data-current-page="arloupe"] .stream-card {
+    height: auto;
+  }
+
+  body[data-current-page="arloupe"] .streamBox {
+    height: min(56.25vw, 62vh) !important;
+    min-height: 260px;
+  }
+
+  .device-control-card {
+    height: auto;
+  }
+
+  .deviceControlGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575.98px) {
+  .deviceControlGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* ---------------------------------------------------------
+ * v5：修正主區域縮窄與串流畫面被拉成直向
+ * --------------------------------------------------------- */
+
+/* arLoupe 主頁使用完整可用寬度 */
+body[data-current-page="arloupe"] .page-body > .container-fluid {
+  width: 100%;
+  max-width: none;
+}
+
+body[data-current-page="arloupe"] [data-page="arloupe"],
+body[data-current-page="arloupe"] [data-page="arloupe"] > .row,
+body[data-current-page="arloupe"] .arloupe-main-column {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+body[data-current-page="arloupe"] .arloupe-main-column {
+  flex: 0 0 100%;
+}
+
+/*
+ * 桌面版：
+ * 左側串流吃掉全部剩餘空間；
+ * 右側控制欄固定 260px。
+ *
+ * 不再設定固定高度，避免畫面被拉成直向長方形。
+ */
+body[data-current-page="arloupe"] .arloupe-main-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 0.75rem;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  align-items: stretch;
+}
+
+/* 串流卡必須可以縮放並吃滿左欄 */
+body[data-current-page="arloupe"] .stream-card {
+  width: 100%;
+  min-width: 0;
+  height: auto;
+}
+
+/*
+ * 串流框以可用寬度為主，維持 16:9。
+ * max-height 避免超過目前視窗剩餘高度。
+ */
+body[data-current-page="arloupe"] .streamBox {
+  width: 100%;
+  height: auto !important;
+  min-height: 0;
+  max-height: calc(100vh - 225px);
+  aspect-ratio: 16 / 9;
+}
+
+body[data-current-page="arloupe"] .streamBox iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+/* 裝置控制高度跟隨串流卡，不再硬撐到整個視窗 */
+body[data-current-page="arloupe"] .device-control-card {
+  width: 260px;
+  min-width: 260px;
+  height: auto;
+  align-self: stretch;
+}
+
+body[data-current-page="arloupe"] .device-control-card .card-body {
+  min-height: 0;
+}
+
+/* 大螢幕稍微放寬控制欄 */
+@media (min-width: 1600px) {
+  body[data-current-page="arloupe"] .arloupe-main-layout {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+
+  body[data-current-page="arloupe"] .device-control-card {
+    width: 280px;
+    min-width: 280px;
+  }
+}
+
+/* 中型桌面縮窄控制欄，但仍然保持左右排列 */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  body[data-current-page="arloupe"] .arloupe-main-layout {
+    grid-template-columns: minmax(0, 1fr) 230px;
+    height: auto;
+  }
+
+  body[data-current-page="arloupe"] .device-control-card {
+    width: 230px;
+    min-width: 230px;
+  }
+
+  body[data-current-page="arloupe"] .streamBox {
+    max-height: calc(100vh - 235px);
+  }
+
+  .deviceControlGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 平板與手機改成上下排列 */
+@media (max-width: 991.98px) {
+  body[data-current-page="arloupe"] .arloupe-main-layout {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    height: auto;
+  }
+
+  body[data-current-page="arloupe"] .device-control-card {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body[data-current-page="arloupe"] .streamBox {
+    width: 100%;
+    height: auto !important;
+    min-height: 230px;
+    max-height: none;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+
+/* ---------------------------------------------------------
+ * v7：錄影檔案主從式版面
+ * --------------------------------------------------------- */
+
+.video-browser-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+  align-items: start;
+}
+
+/* 左側預覽維持在可見範圍 */
+.video-preview-panel {
+  position: sticky;
+  top: 0.75rem;
+  min-width: 0;
+}
+
+.video-preview-card {
+  min-width: 0;
+}
+
+.video-preview-heading {
+  min-width: 0;
+}
+
+.video-selected-title {
+  max-width: min(52vw, 760px);
+  margin-top: 0.2rem;
+  overflow: hidden;
+  color: var(--tblr-secondary);
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.video-preview-card .card-body {
+  min-width: 0;
+}
+
+.video-preview-stage {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  background: #000;
+  border-radius: var(--tblr-border-radius-lg);
+  aspect-ratio: 16 / 9;
+  place-items: center;
+}
+
+.video-preview-stage video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  object-fit: contain;
+}
+
+.video-preview-placeholder {
+  display: grid;
+  min-height: 10rem;
+  padding: 1rem;
+  text-align: center;
+  place-content: center;
+}
+
+.video-preview-placeholder[hidden],
+.video-preview-stage video[hidden] {
+  display: none;
+}
+
+.video-preview-placeholder-title {
+  margin-bottom: 0.25rem;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.selected-video-summary {
+  margin-top: 1rem;
+}
+
+.selected-video-subtitle {
+  overflow-wrap: anywhere;
+  color: var(--tblr-secondary);
+  font-size: 0.85rem;
+}
+
+.selected-video-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem 1rem;
+  margin-top: 0.9rem;
+}
+
+.selected-video-info-item {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+}
+
+.selected-video-info-label {
+  color: var(--tblr-secondary);
+  font-size: 0.72rem;
+}
+
+.selected-video-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+#selectedVideoDownload[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.selected-video-metadata-panel {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--tblr-border-color);
+}
+
+.selected-video-metadata-panel[hidden] {
+  display: none;
+}
+
+.selected-video-metadata-header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.selected-video-metadata-panel pre {
+  max-height: min(38vh, 360px);
+}
+
+/* 右側錄影選單 */
+.video-browser-sidebar {
+  min-width: 0;
+}
+
+.video-browser-sidebar-card {
+  display: flex;
+  max-height: calc(100vh - 155px);
+  min-height: 32rem;
+  flex-direction: column;
+}
+
+.video-browser-sidebar-card .card-body {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: 0.8rem;
+}
+
+.video-browser-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.video-browser-toolbar .form-label {
+  margin-bottom: 0.3rem;
+}
+
+.video-browser-toolbar .btn {
+  min-height: 2.35rem;
+}
+
+.video-browser-sidebar-card #videoMessage {
+  margin: 0.65rem 0;
+  font-size: 0.82rem;
+}
+
+.video-menu-list {
+  display: grid;
+  min-height: 0;
+  flex: 1 1 auto;
+  gap: 0.75rem;
+  padding-right: 0.2rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.video-menu-empty {
+  padding: 1rem;
+  color: var(--tblr-secondary);
+  text-align: center;
+}
+
+.video-menu-date-group {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.video-menu-date-title {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0.25rem 0.1rem;
+  color: var(--tblr-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--tblr-card-bg, #fff);
+}
+
+.video-menu-session {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--tblr-border-color);
+  border-radius: var(--tblr-border-radius-lg);
+}
+
+.video-menu-session-summary {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.video-menu-session-summary::-webkit-details-marker {
+  display: none;
+}
+
+.video-menu-session-main {
+  min-width: 0;
+}
+
+.video-menu-session-title {
+  overflow: hidden;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.video-menu-session-meta {
+  margin-top: 0.2rem;
+  overflow-wrap: anywhere;
+  color: var(--tblr-secondary);
+  font-size: 0.7rem;
+}
+
+.video-menu-session-body {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.45rem;
+  background: #f8fafc;
+  border-top: 1px solid var(--tblr-border-color);
+}
+
+.video-menu-item {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0.65rem;
+  color: inherit;
+  text-align: left;
+  background: #fff;
+  border: 1px solid transparent;
+  border-radius: var(--tblr-border-radius);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.video-menu-item:hover {
+  background: #f2f7fd;
+  border-color: #bfd7f3;
+}
+
+.video-menu-item.active {
+  background: #eaf3ff;
+  border-color: var(--tblr-primary);
+  box-shadow: inset 3px 0 0 var(--tblr-primary);
+}
+
+.video-menu-item:focus-visible {
+  outline: 2px solid var(--tblr-primary);
+  outline-offset: 2px;
+}
+
+.video-menu-item-heading {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.video-menu-item-segment {
+  color: var(--tblr-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.video-menu-item-filename {
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.video-menu-item-meta {
+  margin-top: 0.3rem;
+  overflow-wrap: anywhere;
+  color: var(--tblr-secondary);
+  font-size: 0.7rem;
+}
+
+/* 一般筆電：略縮小右欄 */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .video-browser-layout {
+    grid-template-columns: minmax(0, 1fr) 330px;
+  }
+
+  .selected-video-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 平板與手機：上方預覽、下方選單 */
+@media (max-width: 991.98px) {
+  .video-browser-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .video-preview-panel {
+    position: static;
+  }
+
+  .video-selected-title {
+    max-width: 70vw;
+  }
+
+  .video-browser-sidebar-card {
+    max-height: none;
+    min-height: 0;
+  }
+
+  .video-browser-sidebar-card .card-body {
+    overflow: visible;
+  }
+
+  .video-menu-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .video-menu-date-title {
+    position: static;
+  }
+
+  .selected-video-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 手機：強化觸控與窄螢幕換行 */
+@media (max-width: 575.98px) {
+  .video-preview-card .card-header {
+    align-items: flex-start;
+  }
+
+  .video-preview-card .card-header > .badge {
+    flex: 0 0 auto;
+  }
+
+  .video-selected-title {
+    max-width: 62vw;
+    white-space: normal;
+  }
+
+  .video-preview-card .card-body {
+    padding: 0.75rem;
+  }
+
+  .selected-video-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .selected-video-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .selected-video-actions .btn {
+    min-height: 44px;
+  }
+
+  .video-browser-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .video-browser-toolbar .btn {
+    min-width: 5.5rem;
+    min-height: 44px;
+  }
+
+  .video-menu-session-summary {
+    min-height: 52px;
+    padding: 0.65rem;
+  }
+
+  .video-menu-item {
+    min-height: 72px;
+    padding: 0.7rem;
+  }
+
+  .video-menu-session-title {
+    white-space: normal;
+  }
+}
+
+
+/* ---------------------------------------------------------
+ * v8：手機版最終檢查與觸控修正
+ * --------------------------------------------------------- */
+
+@media (max-width: 991.98px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /*
+   * iPhone Safari 在輸入框小於 16px 時可能自動放大頁面。
+   * 手機版固定為 16px，避免輸入 Wi-Fi 密碼後畫面被放大。
+   */
+  .form-control,
+  .form-select {
+    font-size: 16px;
+  }
+
+  /*
+   * 手機觸控區至少 44px。
+   * 套用在各功能頁按鈕、頂部按鈕與漢堡選單。
+   */
+  .navbar-toggler,
+  .navbar .btn,
+  .arloupe-page .btn {
+    min-height: 44px;
+  }
+
+  .navbar-toggler {
+    min-width: 44px;
+  }
+
+  /* 頂部標題與重新整理按鈕避免互相擠壓 */
+  .page-wrapper > .navbar .container-xl {
+    gap: 0.75rem;
+  }
+
+  .page-wrapper > .navbar .navbar-nav {
+    flex: 0 0 auto;
+  }
+
+  /* 串流與錄影控制改為兩欄，最後的重新整理佔滿整列 */
+  .capture-control-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .capture-control-buttons .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .capture-control-buttons .btn:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /*
+   * 即時畫面標題與三顆操作按鈕分成上下兩列，
+   * 避免「即時畫面」在窄螢幕被拆成兩行。
+   */
+  .stream-card .card-header {
+    display: block;
+  }
+
+  .stream-card .card-title {
+    margin-bottom: 0.55rem;
+  }
+
+  .stream-card-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .stream-card-actions .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* 裝置控制與 BLE 工具按鈕適合手指操作 */
+  .deviceControlGrid .btn,
+  .deviceUtilityRow .btn {
+    min-height: 44px;
+  }
+
+  /*
+   * Wi-Fi 名稱與按鈕分區。
+   * 長 SSID 不會把連線、刪除按鈕擠到畫面外。
+   */
+  .wifiHeader {
+    align-items: stretch;
+  }
+
+  .wifiHeader > div:first-child {
+    min-width: 0;
+  }
+
+  .wifiHeader > .buttonRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .wifiHeader > .buttonRow .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .passwordPanel .buttonRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .passwordPanel .buttonRow .btn {
+    width: 100%;
+  }
+
+  /* 網路、儲存與設定頁底部按鈕在手機上自動排成兩欄 */
+  [data-page="network"] .card-footer .buttonRow,
+  [data-page="storage"] .card-footer .buttonRow,
+  [data-page="settings"] .card-footer .buttonRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  [data-page="network"] .card-footer .buttonRow .btn,
+  [data-page="storage"] .card-footer .buttonRow .btn,
+  [data-page="settings"] .card-footer .buttonRow .btn {
+    width: 100%;
+  }
+
+  /* 單數最後一顆按鈕佔滿整列 */
+  [data-page="network"] .card-footer .buttonRow .btn:last-child:nth-child(odd),
+  [data-page="storage"] .card-footer .buttonRow .btn:last-child:nth-child(odd),
+  [data-page="settings"] .card-footer .buttonRow .btn:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  /* 錄影預覽的長檔名最多顯示兩行 */
+  .video-selected-title {
+    display: -webkit-box;
+    max-width: none;
+    overflow: hidden;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .selected-video-metadata-header .btn {
+    min-width: 64px;
+    min-height: 44px;
+  }
+
+  /* Metadata 與錯誤內容不產生水平捲動 */
+  .selected-video-metadata-panel pre,
+  .jobBox pre,
+  details pre {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* 手機版 Card 不因長文字超出螢幕 */
+  .card,
+  .card-body,
+  .card-header,
+  .card-footer {
+    min-width: 0;
+  }
+}
+
+/* 非常窄的手機 */
+@media (max-width: 374.98px) {
+  .selected-video-info-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .video-browser-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .video-browser-toolbar .btn {
+    width: 100%;
+  }
+
+  .selected-video-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * 手機橫向時限制影片預覽最大寬度，
+ * 避免 16:9 播放器因螢幕很寬而變得過高。
+ */
+@media (
+  min-width: 640px
+) and (
+  max-width: 991.98px
+) and (
+  orientation: landscape
+) {
+  [data-page="videos"] .video-preview-panel {
+    width: min(100%, 680px);
+    margin-inline: auto;
+  }
+
+  [data-page="videos"] .video-browser-sidebar {
+    width: min(100%, 680px);
+    margin-inline: auto;
+  }
+}
+
+
+/* ---------------------------------------------------------
+ * v9：影像設定提醒區
+ * --------------------------------------------------------- */
+
+.capture-config-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: start;
+  padding: 0.85rem 1rem;
+}
+
+.capture-config-notice-title {
+  color: var(--tblr-info-text-emphasis, #055160);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.capture-config-notice-body {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.4rem;
+  overflow-wrap: normal;
+  line-height: 1.55;
+  word-break: normal;
+}
+
+.capture-config-notice-body code {
+  display: inline-block;
+  padding: 0.08rem 0.3rem;
+  overflow-wrap: normal;
+  color: inherit;
+  white-space: nowrap;
+  word-break: normal;
+  background: rgb(255 255 255 / 55%);
+  border-radius: 0.25rem;
+}
+
+@media (max-width: 575.98px) {
+  .capture-config-notice {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+    padding: 0.75rem;
+  }
+
+  .capture-config-notice-title {
+    white-space: normal;
+  }
+
+  .capture-config-notice-body {
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  .capture-config-notice-body span {
+    min-width: 0;
+  }
+}

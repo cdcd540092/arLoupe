@@ -1,10 +1,29 @@
-"""Dynamic recording controller for arLoupe V6.
+#!/usr/bin/env python3
+"""arLoupe V6 動態錄影控制器。
 
-This program uses Python GStreamer to keep one pipeline running:
+這支程式使用 Python GStreamer 建立一條常駐 pipeline：
 
-    v4l2src -> videoconvert -> x264enc -> h264parse -> tee
-                                                     ├─ always-on SRT branch
-                                                     └─ recording branch added and removed at runtime
+    v4l2src -> source caps/decode -> videoconvert -> x264enc -> h264parse -> tee
+                                                                  ├─ SRT 串流分支，永遠開啟
+                                                                  └─ 錄影分支，執行中動態新增 / 移除
+
+支援兩種影像來源：
+
+1. TC358743 / CSI HDMI 輸入：
+   INPUT_PIXEL_FORMAT = "UYVY"
+   pipeline source:
+       video/x-raw,format=UYVY,...
+
+2. USB HDMI 擷取卡：
+   INPUT_PIXEL_FORMAT = "MJPG" 或 "MJPEG"
+   pipeline source:
+       image/jpeg,... ! jpegdec
+
+操作目標：
+1. 開機先只串流，不產生 mp4。
+2. 按 r 後中途開始錄影。
+3. 按 s 後停止錄影並收尾 mp4/json，串流不中斷。
+4. 按 q 後結束程式。
 """
 
 from __future__ import annotations
@@ -24,7 +43,7 @@ try:
 
     gi.require_version("Gst", "1.0")
     from gi.repository import Gst, GLib  # type: ignore
-except Exception as exc:  # pragma: no cover - shown only when system packages are missing
+except Exception as exc:  # pragma: no cover - 只在缺少系統套件時顯示友善錯誤
     raise SystemExit(
         "無法載入 Python GStreamer。請先在 PI5 安裝：\n"
         "sudo apt update\n"
@@ -44,7 +63,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 @dataclass
 class RecordingSession:
-    """State for the active recording session."""
+    """目前正在錄影的 session 狀態。"""
 
     ctx: CaptureContext
     bin: Gst.Bin
@@ -55,7 +74,7 @@ class RecordingSession:
 
 
 class DynamicCaptureController:
-    """Manage the permanent stream and the dynamic recording branch."""
+    """管理常駐串流與動態錄影分支。"""
 
     def __init__(self) -> None:
         Gst.init(None)
@@ -73,12 +92,55 @@ class DynamicCaptureController:
         self._recording: Optional[RecordingSession] = None
         self._quit_requested = False
 
-    # Pipeline setup
+    # ------------------------------------------------------------------
+    # Pipeline 建立
+    # ------------------------------------------------------------------
+
+    def _build_source_desc(self, input_fps: int) -> str:
+        """依照 config.INPUT_PIXEL_FORMAT 建立影像來源段。
+
+        USB HDMI 擷取卡通常是 MJPG：
+            image/jpeg ! jpegdec
+
+        TC358743 / CSI 通常是 UYVY：
+            video/x-raw,format=UYVY
+        """
+
+        input_pixel_format = str(getattr(config, "INPUT_PIXEL_FORMAT", "UYVY")).upper()
+
+        # USB HDMI capture card：MJPEG/MJPG
+        if input_pixel_format in ("MJPG", "MJPEG"):
+            return f"""
+                v4l2src name=source device={config.VIDEO_DEVICE} io-mode=mmap do-timestamp=true !
+                image/jpeg,width={config.WIDTH},height={config.HEIGHT},framerate={input_fps}/1 !
+                jpegdec !
+                videorate drop-only=true !
+                video/x-raw,width={config.WIDTH},height={config.HEIGHT},framerate={config.FPS}/1 !
+            """
+
+        # 原本 TC358743 / CSI：UYVY 或其他 raw 格式
+        return f"""
+            v4l2src name=source device={config.VIDEO_DEVICE} io-mode=mmap do-timestamp=true !
+            video/x-raw,format={input_pixel_format},width={config.WIDTH},height={config.HEIGHT},framerate={input_fps}/1 !
+            videorate drop-only=true !
+            video/x-raw,format={input_pixel_format},width={config.WIDTH},height={config.HEIGHT},framerate={config.FPS}/1 !
+        """
 
     def _build_base_pipeline(self) -> Gst.Pipeline:
-        """Build the base pipeline with the streaming branch only."""
+        """建立只包含串流分支的基礎 pipeline。
+
+        注意：這裡沒有錄影分支。
+        錄影分支會在 start_recording() 時動態掛到 tee。
+        """
 
         leaky_arg = "leaky=downstream" if config.PRE_ENCODE_QUEUE_LEAKY else ""
+
+        # INPUT_FPS 代表來源輸入幀率，FPS 代表後續串流與錄影輸出幀率。
+        # 例如：
+        #   USB 擷取卡 1080p30：INPUT_FPS=30, FPS=30
+        #   CSI 1080p60 但輸出 30：INPUT_FPS=60, FPS=30
+        input_fps = int(getattr(config, "INPUT_FPS", config.FPS))
+
         srt_uri = (
             f"srt://{config.MEDIA_SERVER_IP}:{config.SRT_PORT}"
             f"?mode=caller"
@@ -90,10 +152,10 @@ class DynamicCaptureController:
             f"&pkt_size={config.SRT_PKT_SIZE}"
         )
 
-        # The recording branch is attached to tee only when recording starts.
+        source_desc = self._build_source_desc(input_fps)
+
         pipeline_desc = f"""
-            v4l2src name=source device={config.VIDEO_DEVICE} io-mode=mmap do-timestamp=true !
-            video/x-raw,format=UYVY,width={config.WIDTH},height={config.HEIGHT},framerate={config.FPS}/1 !
+            {source_desc}
             queue max-size-buffers={config.PRE_ENCODE_QUEUE_BUFFERS} max-size-time=0 max-size-bytes=0 {leaky_arg} !
             videoconvert !
             video/x-raw,format=I420,width={config.WIDTH},height={config.HEIGHT},framerate={config.FPS}/1 !
@@ -111,13 +173,21 @@ class DynamicCaptureController:
             srtsink uri="{srt_uri}" sync=false async=false
         """
 
+        print("[INFO] GStreamer source mode:")
+        print(f"[INFO]   VIDEO_DEVICE       = {config.VIDEO_DEVICE}")
+        print(f"[INFO]   INPUT_PIXEL_FORMAT = {getattr(config, 'INPUT_PIXEL_FORMAT', 'UYVY')}")
+        print(f"[INFO]   INPUT_FPS          = {input_fps}")
+        print(f"[INFO]   OUTPUT FPS         = {config.FPS}")
+        print(f"[INFO]   SIZE               = {config.WIDTH}x{config.HEIGHT}")
+
         pipeline = Gst.parse_launch(pipeline_desc)
         if not isinstance(pipeline, Gst.Pipeline):
             raise RuntimeError("GStreamer pipeline 建立失敗")
+
         return pipeline
 
     def _create_record_bin(self, ctx: CaptureContext) -> Gst.Bin:
-        """Build the recording branch: queue -> h264parse -> splitmuxsink."""
+        """建立錄影分支：queue -> h264parse -> splitmuxsink。"""
 
         record_bin = Gst.Bin.new(f"record_bin_{ctx.session_id}")
         if record_bin is None:
@@ -140,7 +210,13 @@ class DynamicCaptureController:
         )
 
         sink.set_property("location", location)
-        sink.set_property("max-size-time", int(config.SEGMENT_SECONDS * 1_000_000_000))
+
+        # splitmuxsink 依 keyframe 與時間門檻切段，實測可能會比設定少約 1 秒。
+        # 使用者看到的 SEGMENT_SECONDS 不變，只在 GStreamer 內部多給一點補償時間。
+        segment_padding = float(getattr(config, "SEGMENT_TIME_PADDING_SECONDS", 0.0))
+        effective_segment_seconds = float(config.SEGMENT_SECONDS) + segment_padding
+
+        sink.set_property("max-size-time", int(effective_segment_seconds * 1_000_000_000))
         sink.set_property("async-finalize", True)
         sink.set_property("send-keyframe-requests", True)
         sink.set_property("muxer-factory", "mp4mux")
@@ -151,21 +227,28 @@ class DynamicCaptureController:
 
         if not queue.link(parser):
             raise RuntimeError("record queue -> h264parse 連接失敗")
+
         if not parser.link(sink):
             raise RuntimeError("record h264parse -> splitmuxsink 連接失敗")
 
         sink_pad = queue.get_static_pad("sink")
+        if sink_pad is None:
+            raise RuntimeError("record queue sink pad 不存在")
+
         ghost_pad = Gst.GhostPad.new("sink", sink_pad)
         if ghost_pad is None:
             raise RuntimeError("record_bin ghost pad 建立失敗")
+
         record_bin.add_pad(ghost_pad)
 
         return record_bin
 
+    # ------------------------------------------------------------------
     # Metadata watcher
+    # ------------------------------------------------------------------
 
     def _start_metadata_watcher(self, ctx: CaptureContext) -> tuple[subprocess.Popen, TextIO, Path]:
-        """Start a dedicated metadata watcher for the session."""
+        """每個錄影 session 啟動自己的 metadata watcher。"""
 
         env = os.environ.copy()
         env.update(
@@ -179,6 +262,7 @@ class DynamicCaptureController:
 
         log_path = ctx.log_dir / f"metadata_{ctx.session_id}.log"
         log_file = open(log_path, "a", encoding="utf-8")
+
         proc = subprocess.Popen(
             [sys.executable, str(BASE_DIR / "metadata_watcher.py")],
             stdout=log_file,
@@ -186,14 +270,18 @@ class DynamicCaptureController:
             cwd=str(BASE_DIR),
             env=env,
         )
+
         return proc, log_file, log_path
 
     @staticmethod
     def _terminate_process(proc: subprocess.Popen, name: str, timeout: float = 5.0) -> None:
+        """安全停止子程序。"""
+
         if proc.poll() is not None:
             return
 
         print(f"[INFO] Stopping {name}...")
+
         try:
             proc.send_signal(signal.SIGINT)
             proc.wait(timeout=timeout)
@@ -211,6 +299,7 @@ class DynamicCaptureController:
 
         print("[INFO] Starting base pipeline: streaming only")
         ret = self.pipeline.set_state(Gst.State.PLAYING)
+
         if ret == Gst.StateChangeReturn.FAILURE:
             raise RuntimeError("GStreamer pipeline 進入 PLAYING 失敗")
 
@@ -221,7 +310,7 @@ class DynamicCaptureController:
         )
 
     def start_recording(self) -> None:
-        """Start recording without interrupting the stream."""
+        """在不中斷串流的情況下開始錄影。"""
 
         with self._lock:
             if self._recording is not None:
@@ -237,8 +326,9 @@ class DynamicCaptureController:
 
             tee_pad = self.tee.request_pad_simple("src_%u")
             if tee_pad is None:
-                # Older GStreamer versions may not have request_pad_simple.
+                # 舊版 GStreamer 可能沒有 request_pad_simple。
                 tee_pad = self.tee.get_request_pad("src_%u")
+
             if tee_pad is None:
                 raise RuntimeError("tee request pad 失敗")
 
@@ -268,17 +358,21 @@ class DynamicCaptureController:
             print(f"[INFO] Watcher log      : {watcher_log_path}")
 
     def stop_recording(self) -> None:
-        """Stop the recording branch and finalize files while streaming continues."""
+        """停止錄影分支並收尾檔案；SRT 串流維持 PLAYING。"""
 
         with self._lock:
             session = self._recording
+
             if session is None:
                 print("[WARN] Recording is not running")
                 return
 
             print("[INFO] Stopping recording branch...")
 
-            # Block new buffers, send EOS, then finalize files after playback checks pass.
+            # 停止錄影的關鍵：
+            # 1. 先阻擋後續 buffer 進入錄影分支，避免 EOS 後又繼續寫入。
+            # 2. 再把 EOS 送進 record_bin 的 sink ghost pad，讓 splitmuxsink/mp4mux 正常寫完 moov atom。
+            # 3. 不要立刻把 .mp4.tmp 改名，finalize_session() 會用 ffprobe 確認可播放才改名。
             record_sink_pad = session.bin.get_static_pad("sink")
             block_probe_id = None
 
@@ -297,6 +391,7 @@ class DynamicCaptureController:
                 print(f"[WARN] Failed to block record branch input: {exc}")
 
             eos_sent = False
+
             try:
                 if record_sink_pad is not None:
                     eos_sent = bool(record_sink_pad.send_event(Gst.Event.new_eos()))
@@ -319,21 +414,25 @@ class DynamicCaptureController:
             self._terminate_process(session.watcher_proc, "metadata watcher")
             session.watcher_log.close()
 
-            # Wait for the last segment to become playable before finalizing it.
+            # 等最後一段真正可播放後，才把 .mp4.tmp 改名為 .mp4 並產生 metadata。
             finalize_session(session.ctx)
 
-            # Remove the recording branch after cleanup; streaming stays PLAYING.
+            # 收尾完成後再移除錄影分支。串流分支仍然保持 PLAYING。
             try:
                 session.bin.set_state(Gst.State.NULL)
+
                 if record_sink_pad is not None and session.tee_pad.is_linked():
                     session.tee_pad.unlink(record_sink_pad)
+
                 if block_probe_id is not None:
                     try:
                         session.tee_pad.remove_probe(block_probe_id)
                     except Exception:
                         pass
+
                 self.tee.release_request_pad(session.tee_pad)
                 self.pipeline.remove(session.bin)
+
             except Exception as exc:
                 print(f"[WARN] Failed to remove record branch cleanly: {exc}")
 
@@ -341,7 +440,7 @@ class DynamicCaptureController:
             print("[INFO] Recording stopped; streaming is still running")
 
     def shutdown(self) -> None:
-        """Stop the whole program."""
+        """結束整個程式。"""
 
         with self._lock:
             self._quit_requested = True
@@ -353,9 +452,13 @@ class DynamicCaptureController:
         self.pipeline.set_state(Gst.State.NULL)
         print("[INFO] Capture controller stopped")
 
-    # Bus messages
+    # ------------------------------------------------------------------
+    # Bus 訊息
+    # ------------------------------------------------------------------
 
     def _on_bus_message(self, _bus: Gst.Bus, message: Gst.Message) -> None:
+        """處理 GStreamer bus 訊息。"""
+
         msg_type = message.type
 
         if msg_type == Gst.MessageType.ERROR:
@@ -372,7 +475,7 @@ class DynamicCaptureController:
                 print(f"[WARN] Debug: {debug}")
 
         elif msg_type == Gst.MessageType.EOS:
-            # Stopping only the recording branch should not EOS the whole pipeline.
+            # 正常情況下，單獨停止錄影分支不應該讓整條 pipeline EOS。
             print("[WARN] Pipeline EOS received")
             self._quit_requested = True
 
@@ -383,10 +486,12 @@ class DynamicCaptureController:
                 if name.startswith("splitmuxsink"):
                     print(f"[INFO] {name}: {structure.to_string()}")
 
-    # Command interface
+    # ------------------------------------------------------------------
+    # 指令介面
+    # ------------------------------------------------------------------
 
     def run_command_loop(self) -> None:
-        """Local CLI control for testing; can be replaced with cloud polling later."""
+        """本機測試用命令列控制。之後可替換成 API 或雲端 config polling。"""
 
         if config.START_RECORDING_ON_BOOT:
             self.start_recording()

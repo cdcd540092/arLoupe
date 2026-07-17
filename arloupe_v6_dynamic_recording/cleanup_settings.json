@@ -1,0 +1,9 @@
+{
+  "retention_days": 7,
+  "low_free_gb": 210.0,
+  "target_free_gb": 220.0,
+  "delete_pending_when_critical": false,
+  "max_delete_sessions": 0,
+  "updated_at": "2026-07-08T09:59:57+08:00",
+  "updated_by": "arloupe-network-api"
+}

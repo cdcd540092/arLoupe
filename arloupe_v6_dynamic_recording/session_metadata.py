@@ -1,4 +1,4 @@
-"""Build session metadata JSON files."""
+"""建立 session_*.json。"""
 
 import json
 from pathlib import Path

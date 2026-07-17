@@ -1,4 +1,4 @@
-"""Path helpers for capture sessions."""
+"""路徑與 session 相關工具。"""
 
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta

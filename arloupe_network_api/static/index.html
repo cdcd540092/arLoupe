@@ -1,0 +1,1262 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+
+  <title>arLoupe 管理系統</title>
+
+  <!-- 你已放在 Pi 5 的 Tabler 靜態檔 -->
+  <link
+    rel="stylesheet"
+    href="/static/vendor/tabler/css/tabler.min.css"
+  />
+
+  <!-- arLoupe 自訂樣式 -->
+  <link
+    rel="stylesheet"
+    href="/static/css/arloupe.css"
+  />
+</head>
+
+<body class="layout-fluid">
+  <div class="page">
+
+    <!-- 左側導覽列 -->
+    <aside
+      class="navbar navbar-vertical navbar-expand-lg"
+      data-bs-theme="dark"
+      aria-label="主要導覽"
+    >
+      <div class="container-fluid">
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#sidebar-menu"
+          aria-controls="sidebar-menu"
+          aria-expanded="false"
+          aria-label="展開導覽列"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <h1 class="navbar-brand navbar-brand-autodark">
+          <span class="brand-mark">aL</span>
+          <span class="brand-text">arLoupe</span>
+        </h1>
+
+        <div class="collapse navbar-collapse" id="sidebar-menu">
+          <ul class="navbar-nav pt-lg-3">
+
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                href="#arloupe"
+                data-page-target="arloupe"
+              >
+                <span class="nav-link-title">arLoupe</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="#videos"
+                data-page-target="videos"
+              >
+                <span class="nav-link-title">錄影檔案</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="#network"
+                data-page-target="network"
+              >
+                <span class="nav-link-title">網路設定</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="#storage"
+                data-page-target="storage"
+              >
+                <span class="nav-link-title">儲存管理</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="#settings"
+                data-page-target="settings"
+              >
+                <span class="nav-link-title">影像設定</span>
+              </a>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <div class="page-wrapper">
+
+      <!-- 頂部狀態列 -->
+      <header class="navbar navbar-expand-md d-print-none">
+        <div class="container-xl">
+
+          <div>
+            <div class="page-pretitle">arLoupe 裝置管理</div>
+            <div class="topbar-title" id="pageTitle">arLoupe</div>
+          </div>
+
+          <div class="navbar-nav flex-row order-md-last align-items-center gap-2">
+            <span
+              class="badge status-badge"
+              data-mirror-for="mode"
+              title="目前網路模式"
+            >
+              讀取中...
+            </span>
+
+            <span
+              class="badge status-badge"
+              data-mirror-for="captureRecording"
+              title="目前錄影狀態"
+            >
+              讀取中...
+            </span>
+
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              onclick="refreshCurrentPage()"
+            >
+              重新整理本頁
+            </button>
+          </div>
+
+        </div>
+      </header>
+
+      <main class="page-body">
+        <div class="container-fluid px-3">
+
+          <div class="page-header mb-3">
+            <div class="row align-items-center">
+              <div class="col">
+                <p
+                  id="pageDescription"
+                  class="page-description text-secondary mb-0"
+                >
+                  觀看即時串流、控制錄影，並操作 arLoupe 裝置功能。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- =====================================================
+               arLoupe
+               ===================================================== -->
+          <section
+            class="arloupe-page active"
+            data-page="arloupe"
+            data-title="arLoupe"
+            data-description="觀看即時串流、控制錄影，並操作 arLoupe 裝置功能。"
+          >
+            <div class="row row-deck row-cards">
+
+              <div class="col-12 arloupe-control-column">
+                <div class="card capture-control-card">
+                  <div class="card-body">
+                    <div class="capture-control-layout">
+
+                      <div class="capture-status-list">
+                        <div class="capture-status-item">
+                          <span class="capture-status-label">串流</span>
+                          <span
+                            id="captureStreaming"
+                            class="capture-status-value"
+                          >
+                            讀取中...
+                          </span>
+                        </div>
+
+                        <div class="capture-status-item">
+                          <span class="capture-status-label">錄影</span>
+                          <span
+                            id="captureRecording"
+                            class="capture-status-value"
+                          >
+                            讀取中...
+                          </span>
+                        </div>
+
+                        <div class="capture-status-item capture-status-meta">
+                          <span class="capture-status-label">Session</span>
+                          <span
+                            id="captureSession"
+                            class="capture-status-value"
+                            title="-"
+                          >
+                            -
+                          </span>
+                        </div>
+
+                        <div class="capture-status-item">
+                          <span class="capture-status-label">日期</span>
+                          <span
+                            id="captureDate"
+                            class="capture-status-value"
+                          >
+                            -
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="buttonRow capture-control-buttons">
+                        <button
+                          id="startStreamBtn"
+                          type="button"
+                          class="btn btn-outline-primary btn-sm"
+                          onclick="startStream()"
+                        >
+                          啟動串流
+                        </button>
+
+                        <button
+                          id="stopStreamBtn"
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="stopStream()"
+                        >
+                          停止串流
+                        </button>
+
+                        <button
+                          id="startRecordBtn"
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          onclick="startRecording()"
+                        >
+                          開始錄影
+                        </button>
+
+                        <button
+                          id="stopRecordBtn"
+                          type="button"
+                          class="btn btn-danger btn-sm"
+                          onclick="stopRecording()"
+                        >
+                          停止錄影
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="loadCaptureStatus()"
+                        >
+                          重新整理
+                        </button>
+                      </div>
+                    </div>
+
+                    <p
+                      id="captureMessage"
+                      class="message-line compact-message mb-0 mt-2"
+                    ></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 arloupe-main-column w-100">
+                <div class="arloupe-main-layout">
+
+                  <!-- 左側：即時畫面 -->
+                  <div class="card stream-card">
+                    <div class="card-header">
+                      <h3 class="card-title">即時畫面</h3>
+
+                      <div class="card-actions stream-card-actions">
+                        <span
+                          id="streamViewerUrlText"
+                          class="badge bg-secondary-lt text-secondary stream-url-badge"
+                        >
+                          尚未載入
+                        </span>
+
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          onclick="loadStreamViewer()"
+                        >
+                          載入
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="reloadStreamViewer()"
+                        >
+                          重載
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="openStreamViewer()"
+                        >
+                          另開
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="card-body">
+                      <div class="streamBox">
+                        <iframe
+                          id="streamFrame"
+                          title="arLoupe 即時畫面"
+                          allow="autoplay; fullscreen"
+                        ></iframe>
+                      </div>
+
+                      <p
+                        id="streamViewerMessage"
+                        class="message-line compact-message mb-0 mt-1"
+                      ></p>
+                    </div>
+                  </div>
+
+                  <!-- 右側：窄版裝置控制 -->
+                  <div class="card device-control-card">
+                    <div class="card-header device-control-header">
+                      <div>
+                        <h3 class="card-title">裝置控制</h3>
+                        <div class="device-status-line">
+                          <span class="text-secondary">BLE</span>
+                          <span id="bleStatus">尚未讀取</span>
+                        </div>
+                      </div>
+
+                      <span
+                        id="bleLastCommand"
+                        class="badge bg-secondary-lt text-secondary device-last-command"
+                        title="最後指令"
+                      >
+                        -
+                      </span>
+                    </div>
+
+                    <div class="card-body">
+                      <div class="deviceControlGrid">
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          onclick="sendBleCommand('plus')"
+                        >
+                          倍率 +
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary btn-sm"
+                          onclick="sendBleCommand('minus')"
+                        >
+                          倍率 -
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary btn-sm"
+                          onclick="sendBleCommand('led')"
+                        >
+                          LED
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary btn-sm"
+                          onclick="sendBleCommand('temp_plus')"
+                        >
+                          色溫 +
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary btn-sm"
+                          onclick="sendBleCommand('temp_minus')"
+                        >
+                          色溫 -
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary btn-sm"
+                          onclick="sendBleCommand('grid1')"
+                        >
+                          格柵
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="sendBleCommand('photo')"
+                        >
+                          拍照
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="sendBleCommand('record', true)"
+                        >
+                          裝置錄影
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-danger btn-sm"
+                          onclick="sendBleCommand('power', true)"
+                        >
+                          電源
+                        </button>
+                      </div>
+
+                      <p
+                        id="bleMessage"
+                        class="message-line compact-message device-message mb-0 mt-2"
+                      ></p>
+
+                      <div class="deviceUtilityRow">
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="loadBleStatus()"
+                        >
+                          更新狀態
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="loadBleServices()"
+                        >
+                          查看服務
+                        </button>
+                      </div>
+
+                      <details class="device-details mt-2">
+                        <summary>BLE 詳細資料</summary>
+                        <pre id="bleRaw">-</pre>
+                      </details>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- =====================================================
+               錄影檔案
+               ===================================================== -->
+          <section
+            class="arloupe-page"
+            data-page="videos"
+            data-title="錄影檔案"
+            data-description="左側預覽目前選取的影片，右側依日期與 Session 選擇錄影片段。"
+          >
+            <div class="video-browser-layout">
+
+              <!-- 左側：影片預覽與檔案資訊 -->
+              <div class="video-preview-panel">
+                <div class="card video-preview-card">
+                  <div class="card-header">
+                    <div class="video-preview-heading">
+                      <h3 class="card-title">影片預覽</h3>
+
+                      <div
+                        id="selectedVideoTitle"
+                        class="video-selected-title"
+                      >
+                        尚未選擇影片
+                      </div>
+                    </div>
+
+                    <span
+                      id="selectedVideoUploadBadge"
+                      class="badge bg-secondary-lt text-secondary"
+                    >
+                      -
+                    </span>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="video-preview-stage">
+                      <div
+                        id="videoPreviewPlaceholder"
+                        class="video-preview-placeholder"
+                      >
+                        <div class="video-preview-placeholder-title">
+                          請從右側選擇影片
+                        </div>
+                        <div class="text-secondary">
+                          選取後會在這裡顯示播放器
+                        </div>
+                      </div>
+
+                      <video
+                        id="videoPreviewPlayer"
+                        controls
+                        playsinline
+                        preload="metadata"
+                        hidden
+                      ></video>
+                    </div>
+
+                    <div class="selected-video-summary">
+                      <div
+                        id="selectedVideoSubtitle"
+                        class="selected-video-subtitle"
+                      >
+                        尚未選擇錄影片段。
+                      </div>
+
+                      <div class="selected-video-info-grid">
+                        <div class="selected-video-info-item">
+                          <span class="selected-video-info-label">
+                            Session
+                          </span>
+                          <span id="selectedVideoSession">-</span>
+                        </div>
+
+                        <div class="selected-video-info-item">
+                          <span class="selected-video-info-label">
+                            錄影日期
+                          </span>
+                          <span id="selectedVideoDate">-</span>
+                        </div>
+
+                        <div class="selected-video-info-item">
+                          <span class="selected-video-info-label">
+                            時長
+                          </span>
+                          <span id="selectedVideoDuration">-</span>
+                        </div>
+
+                        <div class="selected-video-info-item">
+                          <span class="selected-video-info-label">
+                            大小
+                          </span>
+                          <span id="selectedVideoSize">-</span>
+                        </div>
+
+                        <div class="selected-video-info-item">
+                          <span class="selected-video-info-label">
+                            修改時間
+                          </span>
+                          <span id="selectedVideoModified">-</span>
+                        </div>
+
+                        <div class="selected-video-info-item">
+                          <span class="selected-video-info-label">
+                            Metadata
+                          </span>
+                          <span id="selectedVideoMetadataStatus">-</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="selected-video-actions">
+                      <a
+                        id="selectedVideoDownload"
+                        class="btn btn-primary"
+                        href="#"
+                        aria-disabled="true"
+                        tabindex="-1"
+                        download
+                      >
+                        下載影片
+                      </a>
+
+                      <button
+                        id="selectedVideoMetadataBtn"
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="toggleSelectedVideoMetadata()"
+                        disabled
+                      >
+                        查看 Metadata
+                      </button>
+                    </div>
+
+                    <div
+                      id="selectedVideoMetadataPanel"
+                      class="selected-video-metadata-panel"
+                      hidden
+                    >
+                      <div class="selected-video-metadata-header">
+                        <strong>Metadata</strong>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="closeSelectedVideoMetadata()"
+                        >
+                          收合
+                        </button>
+                      </div>
+
+                      <pre id="selectedVideoMetadataRaw">尚未載入</pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 右側：日期、Session 與影片選單 -->
+              <aside class="video-browser-sidebar">
+                <div class="card video-browser-sidebar-card">
+                  <div class="card-header">
+                    <h3 class="card-title">錄影選單</h3>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="video-browser-toolbar">
+                      <div>
+                        <label
+                          class="form-label"
+                          for="videoDateSelect"
+                        >
+                          日期
+                        </label>
+
+                        <select
+                          id="videoDateSelect"
+                          class="form-select"
+                          onchange="loadVideoList(true)"
+                        >
+                          <option value="">最新日期</option>
+                        </select>
+                      </div>
+
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="loadVideoList(true)"
+                      >
+                        重新整理
+                      </button>
+                    </div>
+
+                    <p
+                      id="videoMessage"
+                      class="message-line text-secondary"
+                    >
+                      尚未載入。
+                    </p>
+
+                    <div id="videoList" class="video-menu-list">
+                      <div class="text-secondary">尚未載入。</div>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+
+            </div>
+          </section>
+
+
+          <!-- =====================================================
+               網路設定
+               ===================================================== -->
+          <section
+            class="arloupe-page"
+            data-page="network"
+            data-title="網路設定"
+            data-description="查看目前連線，切換熱點或 Wi-Fi，並管理已儲存的無線網路。"
+          >
+            <div class="row row-deck row-cards">
+
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">目前網路狀態</h3>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="row g-3">
+                      <div class="col-6 col-lg-3">
+                        <div class="text-secondary">模式</div>
+                        <div class="status-value">
+                          <span id="mode">讀取中...</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6 col-lg-3">
+                        <div class="text-secondary">IPv4</div>
+                        <div class="status-text text-break">
+                          <span id="ipv4">讀取中...</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-lg-3">
+                        <div class="text-secondary">管理網址</div>
+                        <div class="status-text text-break">
+                          <span id="accessUrl">讀取中...</span>
+                        </div>
+                      </div>
+
+                      <div class="col-12 col-lg-3">
+                        <div class="text-secondary">熱點 DHCP</div>
+                        <div class="status-text">
+                          <span id="dhcp">讀取中...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card-footer">
+                    <div class="buttonRow">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="loadStatus()"
+                      >
+                        重新整理
+                      </button>
+
+                      <button
+                        id="toHotspotBtn"
+                        type="button"
+                        class="btn btn-warning"
+                        onclick="switchToHotspot()"
+                      >
+                        切換到熱點
+                      </button>
+
+                      <button
+                        id="toWifiBtn"
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="switchToDefaultWifi()"
+                      >
+                        切回 Wi-Fi
+                      </button>
+                    </div>
+
+                    <p id="modeMessage" class="message-line mb-0 mt-3"></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-xl-7">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Wi-Fi</h3>
+
+                    <div class="card-actions">
+                      <span
+                        id="scanSource"
+                        class="badge bg-secondary-lt text-secondary"
+                      >
+                        尚未掃描
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="card-body">
+                    <button
+                      id="scanButton"
+                      type="button"
+                      class="btn btn-primary"
+                      onclick="scanWifi()"
+                    >
+                      掃描 Wi-Fi
+                    </button>
+
+                    <p id="wifiMessage" class="message-line mt-3"></p>
+
+                    <div id="wifiCards" class="wifiList">
+                      <div class="text-secondary">尚未掃描。</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-xl-5">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">連線工作狀態</h3>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="jobBox">
+                      <dl class="row mb-0">
+                        <dt class="col-4">狀態</dt>
+                        <dd class="col-8">
+                          <span id="jobStatus">idle</span>
+                        </dd>
+
+                        <dt class="col-4">步驟</dt>
+                        <dd class="col-8">
+                          <span id="jobStep">-</span>
+                        </dd>
+
+                        <dt class="col-4">訊息</dt>
+                        <dd class="col-8">
+                          <span id="jobMessage">目前沒有任務</span>
+                        </dd>
+
+                        <dt class="col-4">建議</dt>
+                        <dd class="col-8">
+                          <span id="jobSuggestion">-</span>
+                        </dd>
+
+                        <dt class="col-4">新網址</dt>
+                        <dd class="col-8 text-break">
+                          <span id="jobAccessUrl">-</span>
+                        </dd>
+                      </dl>
+
+                      <div class="mt-3">
+                        <div class="text-secondary mb-1">錯誤</div>
+                        <pre id="jobError">-</pre>
+                      </div>
+
+                      <details class="mt-3">
+                        <summary>詳細資料</summary>
+                        <pre id="jobRaw">-</pre>
+                      </details>
+                    </div>
+                  </div>
+
+                  <div class="card-footer">
+                    <div class="buttonRow">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="loadJobStatus()"
+                      >
+                        重新整理狀態
+                      </button>
+
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="clearJobStatus()"
+                      >
+                        清除
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- =====================================================
+               儲存管理
+               ===================================================== -->
+          <section
+            class="arloupe-page"
+            data-page="storage"
+            data-title="儲存管理"
+            data-description="查看本機容量、設定保留策略，並預覽或執行舊錄影清理。"
+          >
+            <div class="row row-deck row-cards">
+
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">儲存空間</h3>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="row g-3">
+                      <div class="col-6 col-lg-3">
+                        <div class="text-secondary">剩餘</div>
+                        <div class="status-value">
+                          <span id="storageFree">讀取中...</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6 col-lg-3">
+                        <div class="text-secondary">已使用</div>
+                        <div class="status-value">
+                          <span id="storageUsed">讀取中...</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6 col-lg-3">
+                        <div class="text-secondary">總容量</div>
+                        <div class="status-value">
+                          <span id="storageTotal">讀取中...</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6 col-lg-3">
+                        <div class="text-secondary">使用率</div>
+                        <div class="status-value">
+                          <span id="storagePercent">讀取中...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card-footer">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      onclick="loadStorageStatus()"
+                    >
+                      重新整理容量
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">自動清理策略</h3>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="row g-3">
+                      <div class="col-12 col-md-6 col-xl-3">
+                        <label
+                          class="form-label"
+                          for="cleanupRetentionDays"
+                        >
+                          保留天數
+                        </label>
+
+                        <input
+                          id="cleanupRetentionDays"
+                          class="form-control"
+                          type="number"
+                          min="0"
+                          max="3650"
+                        />
+                      </div>
+
+                      <div class="col-12 col-md-6 col-xl-3">
+                        <label
+                          class="form-label"
+                          for="cleanupLowFreeGb"
+                        >
+                          低於多少 GB 自動刪除
+                        </label>
+
+                        <input
+                          id="cleanupLowFreeGb"
+                          class="form-control"
+                          type="number"
+                          min="1"
+                          step="1"
+                        />
+                      </div>
+
+                      <div class="col-12 col-md-6 col-xl-3">
+                        <label
+                          class="form-label"
+                          for="cleanupTargetFreeGb"
+                        >
+                          刪除至多少 GB 停止
+                        </label>
+
+                        <input
+                          id="cleanupTargetFreeGb"
+                          class="form-control"
+                          type="number"
+                          min="1"
+                          step="1"
+                        />
+                      </div>
+
+                      <div class="col-12 col-md-6 col-xl-3">
+                        <label
+                          class="form-label"
+                          for="cleanupMaxDeleteSessions"
+                        >
+                          單次最多刪除 Session
+                        </label>
+
+                        <input
+                          id="cleanupMaxDeleteSessions"
+                          class="form-control"
+                          type="number"
+                          min="0"
+                          step="1"
+                          placeholder="0 = 不限制"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card-footer">
+                    <div class="buttonRow">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="loadCleanupSettings()"
+                      >
+                        讀取清除設定
+                      </button>
+
+                      <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="saveCleanupSettings()"
+                      >
+                        儲存清除設定
+                      </button>
+
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="previewCleanup()"
+                      >
+                        預覽可刪除
+                      </button>
+
+                      <button
+                        type="button"
+                        class="btn btn-danger"
+                        onclick="runCleanup()"
+                      >
+                        執行刪除
+                      </button>
+                    </div>
+
+                    <p
+                      id="storageMessage"
+                      class="message-line text-secondary mb-0 mt-3"
+                    >
+                      尚未讀取。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-xl-7">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">可清理 Session</h3>
+                  </div>
+
+                  <div class="card-body">
+                    <div id="cleanupPreview" class="cleanupList">
+                      <div class="text-secondary">
+                        尚未執行清理預覽。
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-xl-5">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">清理詳細資料</h3>
+                  </div>
+
+                  <div class="card-body">
+                    <details>
+                      <summary>展開詳細資料</summary>
+                      <pre id="cleanupRaw">-</pre>
+                    </details>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- =====================================================
+               影像設定
+               ===================================================== -->
+          <section
+            class="arloupe-page"
+            data-page="settings"
+            data-title="影像設定"
+            data-description="調整輸出 FPS、位元率與錄影分段時間，並重新啟動影像服務套用。"
+          >
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">影像參數</h3>
+              </div>
+
+              <div class="card-body">
+                <div class="row g-3">
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label
+                      class="form-label"
+                      for="configFps"
+                    >
+                      輸出 FPS
+                    </label>
+
+                    <select id="configFps" class="form-select">
+                      <option value="30">30 fps</option>
+                      <option value="60">60 fps</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label
+                      class="form-label"
+                      for="configBitrate"
+                    >
+                      位元率 kbps
+                    </label>
+
+                    <input
+                      id="configBitrate"
+                      class="form-control"
+                      type="number"
+                      min="1000"
+                      max="20000"
+                      step="500"
+                    />
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <label
+                      class="form-label"
+                      for="configSegmentSeconds"
+                    >
+                      分段時長 秒
+                    </label>
+
+                    <input
+                      id="configSegmentSeconds"
+                      class="form-control"
+                      type="number"
+                      min="10"
+                      max="1800"
+                      step="10"
+                    />
+                  </div>
+
+                  <div class="col-6 col-md-3 col-xl-1">
+                    <div class="form-label">來源 FPS</div>
+                    <span
+                      id="configInputFps"
+                      class="badge bg-secondary-lt text-secondary"
+                    >
+                      60
+                    </span>
+                  </div>
+
+                  <div class="col-6 col-md-3 col-xl-2">
+                    <div class="form-label">Keyframe</div>
+                    <span
+                      id="configKeyInt"
+                      class="badge bg-secondary-lt text-secondary"
+                    >
+                      自動
+                    </span>
+                  </div>
+
+                </div>
+
+                <div class="alert alert-info capture-config-notice mt-4 mb-0" role="note">
+                <!-- 加入 style 來控制大小與粗細 -->
+                <div class="capture-config-notice-title" style="font-size: 1.25rem; font-weight: bold;">
+                  提醒
+                </div>
+
+                <div class="capture-config-notice-body">
+                  <span>
+                    套用前請先停止串流與錄影。
+                  </span>
+                </div>
+              </div>
+              </div>
+
+              <div class="card-footer">
+                <div class="buttonRow">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="loadCaptureConfig()"
+                  >
+                    讀取設定
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="saveCaptureConfig(false)"
+                  >
+                    儲存設定
+                  </button>
+
+                  <button
+                    id="applyCaptureConfigBtn"
+                    type="button"
+                    class="btn btn-warning"
+                    onclick="applyCaptureConfig()"
+                  >
+                    套用並重啟影像服務
+                  </button>
+                </div>
+
+                <p
+                  id="captureConfigMessage"
+                  class="message-line mb-0 mt-3"
+                ></p>
+              </div>
+            </div>
+
+            <div class="card mt-3">
+              <div class="card-header">
+                <h3 class="card-title">影像參數詳細資料</h3>
+              </div>
+
+              <div class="card-body">
+                <details>
+                  <summary>展開詳細資料</summary>
+                  <pre id="captureConfigRaw">-</pre>
+                </details>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Tabler 元件功能 -->
+  <script
+    defer
+    src="/static/vendor/tabler/js/tabler.min.js"
+  ></script>
+
+  <!-- arLoupe 原有功能 -->
+  <script defer src="/static/js/common.js"></script>
+  <script defer src="/static/js/network.js"></script>
+  <script defer src="/static/js/capture.js"></script>
+  <script defer src="/static/js/stream.js"></script>
+  <script defer src="/static/js/capture-config.js"></script>
+  <script defer src="/static/js/videos.js"></script>
+  <script defer src="/static/js/ble.js"></script>
+  <script defer src="/static/js/storage.js"></script>
+
+  <!-- 頁面切換必須在 main.js 前載入 -->
+  <script defer src="/static/js/navigation.js"></script>
+  <script defer src="/static/js/main.js"></script>
+</body>
+</html>

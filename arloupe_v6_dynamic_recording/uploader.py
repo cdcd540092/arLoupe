@@ -15,8 +15,8 @@ import config
 # Windows 模擬後端 IP
 # 正式，ex. https://api.example.com
 #UPLOAD_API_BASE_URL = ""
-#UPLOAD_API_BASE_URL = "http://192.168.1.173:8000"
-UPLOAD_API_BASE_URL = "http://172.20.10.12:8000"
+UPLOAD_API_BASE_URL = "http://192.168.1.173:8000"
+#UPLOAD_API_BASE_URL = "http://172.20.10.12:8000"
 
 # 幾秒描一次
 SCAN_INTERVAL_SECONDS = 5

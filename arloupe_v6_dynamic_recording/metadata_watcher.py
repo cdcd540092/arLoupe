@@ -1,4 +1,4 @@
-"""Watch recording segments, finalize temp videos, and write metadata."""
+"""監控錄影 segment，將完成的 .mp4.tmp 改名成 .mp4，並產生同名 JSON metadata。"""
 
 import json
 import os
@@ -28,7 +28,11 @@ def datetime_from_timestamp(ts: float) -> str:
 
 
 def probe_video_duration_seconds(video_path: Path) -> Optional[float]:
-    """Return the duration in seconds when ffprobe can read the video."""
+    """用 ffprobe 檢查影片是否可讀，成功時回傳 duration 秒數。
+
+    這個檢查可以避免把尚未 finalize 的 .mp4.tmp 改成 .mp4，
+    也可以避免替壞掉的最後一段產生 metadata。
+    """
     if not video_path.exists() or video_path.stat().st_size <= 0:
         return None
 
@@ -74,19 +78,24 @@ def probe_video_duration_seconds(video_path: Path) -> Optional[float]:
 
 
 def is_video_playable(video_path: Path) -> bool:
-    """Return True when ffprobe can read the MP4."""
+    """回傳 MP4 是否已可被 ffprobe 正常讀取。"""
     return probe_video_duration_seconds(video_path) is not None
 
 
 def normalize_video_path(path: Path) -> Path:
-    """Map xxx.mp4.tmp to the final xxx.mp4 path."""
+    """把 xxx.mp4.tmp 對應成正式檔名 xxx.mp4。"""
     if path.name.endswith(TEMP_VIDEO_SUFFIX):
         return path.with_name(path.name[: -len(TEMP_SUFFIX)])
     return path
 
 
 def parse_segment_info(filename: str):
-    """Parse session_id, device_id, and segment_index from a segment filename."""
+    """
+    解析：20260514_143000_arloupe01_seg00003.mp4
+    也接受暫存檔：20260514_143000_arloupe01_seg00003.mp4.tmp
+
+    回傳：session_id, device_id, segment_index
+    """
     if filename.endswith(TEMP_VIDEO_SUFFIX):
         filename = filename[: -len(TEMP_SUFFIX)]
 
@@ -131,13 +140,17 @@ def is_file_stable(path: Path, wait_seconds: float) -> bool:
 
 
 def iter_session_video_files(segment_dir: Path):
-    """Yield final MP4 files and temp MP4 files."""
+    """列出正式 mp4 與暫存 mp4.tmp。"""
     yield from segment_dir.glob("*.mp4")
     yield from segment_dir.glob("*.mp4.tmp")
 
 
 def has_newer_segment(segment_dir: Path, session_id: str, segment_index: int) -> bool:
-    """Return True when a newer segment already exists for the session."""
+    """判斷同一個 session 是否已經出現更後面的 segment。
+
+    若 seg00001 已經出現，代表 seg00000 通常已經切段完成，這時才適合把
+    seg00000.mp4.tmp 改名成 seg00000.mp4。
+    """
     for path in iter_session_video_files(segment_dir):
         parsed_session_id, _device_id, parsed_index = parse_segment_info(path.name)
         if parsed_session_id == session_id and parsed_index is not None:
@@ -147,7 +160,11 @@ def has_newer_segment(segment_dir: Path, session_id: str, segment_index: int) ->
 
 
 def finalize_temp_video(temp_path: Path, force: bool = False) -> Optional[Path]:
-    """Rename a finalized .mp4.tmp file to .mp4."""
+    """將完成的 .mp4.tmp 改名為 .mp4。
+
+    force=False 時，會先等待檔案大小穩定；watcher 日常執行使用。
+    force=True 時，通常代表 GStreamer 已停止；finalizer 可以用來處理最後一段。
+    """
     if not temp_path.name.endswith(TEMP_VIDEO_SUFFIX):
         return normalize_video_path(temp_path)
 
@@ -160,7 +177,8 @@ def finalize_temp_video(temp_path: Path, force: bool = False) -> Optional[Path]:
         print(f"[INFO] Still writing temp video: {temp_path.name}")
         return None
 
-    # Always verify that the MP4 is readable before renaming it.
+    # 無論是不是 force，都必須確認 MP4 已經可讀，避免最後一段 moov atom 尚未寫完
+    # 就被改名成正式 .mp4。
     if not is_video_playable(temp_path):
         print(f"[INFO] Temp video not finalized yet, keep as tmp: {temp_path.name}")
         return None
@@ -319,7 +337,7 @@ def process_temp_mp4(temp_path: Path, seen: set) -> None:
     if parsed_session_id is None or segment_index is None:
         return
 
-    # Skip the currently recording tail segment so it is not renamed too early.
+    # 日常 watcher 不處理目前正在錄的最後一段，避免太早把 .tmp 改成 .mp4。
     if not has_newer_segment(temp_path.parent, parsed_session_id, segment_index):
         return
 

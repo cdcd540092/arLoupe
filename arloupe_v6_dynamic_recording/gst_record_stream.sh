@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# arLoupe: record and stream at the same time.
-# This file only contains the GStreamer pipeline.
+# ============================================================
+# arLoupe：同時錄影 + SRT 串流
+#
+# 這支檔案只放 GStreamer 指令。
+#
+# v5 pipeline：
+#   1080p60 UYVY → I420 → x264enc → tee
+#     ├─ splitmuxsink：每段 5 分鐘 MP4
+#     └─ srtsink：SRT 推到 MediaMTX
+#
+# 檔名：
+#   錄影中：20260515_143000_arloupe01_seg00000.mp4.tmp
+#   完成後：20260515_143000_arloupe01_seg00000.mp4
+# ============================================================
 
 SESSION_ID="${SESSION_ID:-$(date +"%Y%m%d_%H%M%S")}" 
 DEVICE_ID="${DEVICE_ID:-arloupe01}"
@@ -52,7 +64,7 @@ echo "[INFO] SRT latency=${SRT_LATENCY}"
 echo "[INFO] Start GStreamer record + stream pipeline"
 echo
 
-# Use a bash array so num-buffers can be added only when needed.
+# 這裡用 bash array，才能在需要時才加 num-buffers。
 if [[ "${RECORD_CONTINUOUS}" == "1" ]]; then
   V4L2SRC_ARGS=(device="${VIDEO_DEVICE}" io-mode=mmap do-timestamp=true)
 else

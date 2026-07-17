@@ -1,0 +1,4 @@
+# V6 需要系統套件 Python GStreamer，不是 pip 套件。
+# 請在 PI5 執行：
+# sudo apt update
+# sudo apt install -y python3-gi python3-gst-1.0 gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0

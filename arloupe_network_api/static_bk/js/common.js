@@ -1,0 +1,58 @@
+/* 共用狀態與工具函式 */
+
+let currentMode = "unknown";
+let jobPollTimer = null;
+let captureBusy = false;
+
+function setMessage(elementId, text, className) {
+  const el = document.getElementById(elementId);
+  el.textContent = text;
+  el.className = className || "";
+}
+
+function cssSafeId(text) {
+  return btoa(unescape(encodeURIComponent(text))).replaceAll("=", "").replaceAll("+", "-").replaceAll("/", "_");
+}
+
+function escapeHtml(text) {
+  return String(text || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatSignal(net) {
+  if (net.signal_dbm) return `${net.signal}% (${net.signal_dbm} dBm)`;
+  if (net.signal) return `${net.signal}%`;
+  return "未知";
+}
+
+function formatSecurity(net) {
+  return net.security || "未知";
+}
+
+function formatScanSource(source) {
+  if (source === "iw-ap-force") return "iw";
+  if (source === "nmcli-fallback") return "nmcli";
+  if (source === "nmcli") return "nmcli";
+  return source || "未知";
+}
+
+function formatDuration(seconds) {
+  if (seconds === null || seconds === undefined || seconds === "") return "未知";
+  const total = Math.round(Number(seconds));
+  if (!Number.isFinite(total)) return "未知";
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  if (h > 0) return `${h} 小時 ${String(m).padStart(2, "0")} 分`;
+  if (m > 0) return `${m} 分 ${String(sec).padStart(2, "0")} 秒`;
+  return `${sec} 秒`;
+}
+
+function formatDateTime(text) {
+  if (!text) return "未知時間";
+  return String(text).replace("T", " ");
+}

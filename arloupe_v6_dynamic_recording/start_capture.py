@@ -1,4 +1,11 @@
-"""arLoupe V6 startup entry point."""
+"""arLoupe V6 啟動程式。
+
+預設行為：
+1. 啟動後只推 SRT 串流，不錄影。
+2. 按 r 開始錄影。
+3. 按 s 停止錄影，串流不中斷。
+4. 按 q 離開。
+"""
 
 import config
 from capture_controller import DynamicCaptureController

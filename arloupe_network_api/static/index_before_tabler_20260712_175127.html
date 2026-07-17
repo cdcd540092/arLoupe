@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>arLoupe 設定</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+  <h1>arLoupe 設定</h1>
+
+  <div class="card">
+    <h2>目前狀態</h2>
+    <div class="grid">
+      <div>模式：<span id="mode">讀取中...</span></div>
+      <div>IPv4：<span id="ipv4">讀取中...</span></div>
+      <div>網址：<span id="accessUrl">讀取中...</span></div>
+      <div>DHCP：<span id="dhcp">讀取中...</span></div>
+    </div>
+    <div class="buttonRow">
+      <button onclick="loadStatus()">重新整理</button>
+      <button id="toHotspotBtn" onclick="switchToHotspot()">切換到熱點</button>
+      <button id="toWifiBtn" onclick="switchToDefaultWifi()">切回 Wi-Fi</button>
+    </div>
+    <p id="modeMessage"></p>
+  </div>
+
+  <div class="card">
+    <h2>儲存空間</h2>
+    <div class="grid">
+      <div>剩餘：<span id="storageFree">讀取中...</span></div>
+      <div>已使用：<span id="storageUsed">讀取中...</span></div>
+      <div>總容量：<span id="storageTotal">讀取中...</span></div>
+      <div>使用率：<span id="storagePercent">讀取中...</span></div>
+    </div>
+
+    <div class="grid mt-12">
+      <div>
+        <label>保留天數</label>
+        <input id="cleanupRetentionDays" type="number" min="0" max="3650" />
+      </div>
+      <div>
+        <label>低於多少 GB 自動刪除</label>
+        <input id="cleanupLowFreeGb" type="number" min="1" step="1" />
+      </div>
+      <div>
+        <label>刪除至多少 GB 停止</label>
+        <input id="cleanupTargetFreeGb" type="number" min="1" step="1" />
+      </div>
+      <div>
+        <label>單次最多刪除 session</label>
+        <input id="cleanupMaxDeleteSessions" type="number" min="0" step="1" placeholder="0 = 不限制" />
+      </div>
+    </div>
+
+    <div class="buttonRow">
+      <button onclick="loadStorageStatus()">重新整理</button>
+      <button onclick="loadCleanupSettings()">讀取清除設定</button>
+      <button onclick="saveCleanupSettings()">儲存清除設定</button>
+      <button onclick="previewCleanup()">預覽可刪除</button>
+      <button class="dangerBtn" onclick="runCleanup()">執行刪除</button>
+    </div>
+
+    <p id="storageMessage" class="small">尚未讀取。</p>
+    <div id="cleanupPreview" class="cleanupList"></div>
+    <details>
+      <summary>清理詳細資料</summary>
+      <pre id="cleanupRaw">-</pre>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>影像</h2>
+    <div class="grid">
+      <div>串流：<span id="captureStreaming">讀取中...</span></div>
+      <div>錄影：<span id="captureRecording">讀取中...</span></div>
+      <div>Session：<span id="captureSession">-</span></div>
+      <div>日期：<span id="captureDate">-</span></div>
+    </div>
+    <div class="buttonRow">
+      <button id="startStreamBtn" onclick="startStream()">啟動串流</button>
+      <button id="stopStreamBtn" onclick="stopStream()">停止串流</button>
+      <button id="startRecordBtn" class="primary" onclick="startRecording()">開始錄影</button>
+      <button id="stopRecordBtn" class="dangerBtn" onclick="stopRecording()">停止錄影</button>
+      <button onclick="loadCaptureStatus()">重新整理</button>
+    </div>
+    <p id="captureMessage"></p>
+  </div>
+
+
+
+
+
+  <div class="card">
+    <h2>即時畫面</h2>
+    <div class="buttonRow">
+      <button onclick="loadStreamViewer()">載入畫面</button>
+      <button onclick="reloadStreamViewer()">重新載入</button>
+      <button onclick="openStreamViewer()">另開視窗</button>
+      <span id="streamViewerUrlText" class="pill grayPill">尚未載入</span>
+    </div>
+    <p class="small">請先啟動串流，再載入畫面。</p>
+    <div class="streamBox">
+      <iframe
+        id="streamFrame"
+        title="arLoupe 即時畫面"
+        allow="autoplay; fullscreen"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <p id="streamViewerMessage"></p>
+  </div>
+
+  <div class="card">
+    <h2>影像參數</h2>
+    <div class="grid">
+      <div>
+        <label for="configFps">輸出 FPS</label>
+        <select id="configFps">
+          <option value="30">30 fps</option>
+          <option value="60">60 fps</option>
+        </select>
+      </div>
+      <div>
+        <label for="configBitrate">位元率 kbps</label>
+        <input id="configBitrate" type="number" min="1000" max="20000" step="500" />
+      </div>
+      <div>
+        <label for="configSegmentSeconds">分段時長 秒</label>
+        <input id="configSegmentSeconds" type="number" min="10" max="1800" step="10" />
+      </div>
+      <div>
+        <label>來源 FPS</label>
+        <div><span id="configInputFps" class="pill grayPill">60</span></div>
+      </div>
+      <div>
+        <label>Keyframe</label>
+        <div><span id="configKeyInt" class="pill grayPill">自動</span></div>
+      </div>
+    </div>
+    <div class="buttonRow">
+      <button onclick="loadCaptureConfig()">讀取設定</button>
+      <button onclick="saveCaptureConfig(false)">儲存設定</button>
+      <button id="applyCaptureConfigBtn" class="primary" onclick="applyCaptureConfig()">套用並重啟影像服務</button>
+    </div>
+    <p class="small">套用前請先停止串流與錄影；設定會寫入 capture_settings.json，重啟 7000 影像服務後生效。</p>
+    <p id="captureConfigMessage"></p>
+    <details>
+      <summary>影像參數詳細資料</summary>
+      <pre id="captureConfigRaw">-</pre>
+    </details>
+  </div>
+
+
+
+  <div class="card">
+    <h2>arLoupe 控制</h2>
+    <div class="grid">
+      <div>BLE：<span id="bleStatus">尚未讀取</span></div>
+      <div>最後指令：<span id="bleLastCommand">-</span></div>
+    </div>
+
+    <div class="bleGrid">
+      <div class="bleGroup">
+        <div class="bleGroupTitle">倍率</div>
+        <button class="primary" onclick="sendBleCommand('plus')">倍率 +</button>
+        <button onclick="sendBleCommand('minus')">倍率 -</button>
+      </div>
+
+      <div class="bleGroup">
+        <div class="bleGroupTitle">燈光 / 色溫</div>
+        <button onclick="sendBleCommand('led')">LED</button>
+        <button onclick="sendBleCommand('temp_plus')">色溫 +</button>
+        <button onclick="sendBleCommand('temp_minus')">色溫 -</button>
+      </div>
+
+      <div class="bleGroup">
+        <div class="bleGroupTitle">格柵</div>
+        <button onclick="sendBleCommand('grid1')">格柵 1</button>
+        <button onclick="sendBleCommand('grid2')">格柵 2</button>
+        <button onclick="sendBleCommand('grid3')">格柵 3</button>
+        <button onclick="sendBleCommand('grid4')">格柵 4</button>
+      </div>
+
+      <div class="bleGroup">
+        <div class="bleGroupTitle">其他</div>
+        <button onclick="sendBleCommand('photo')">拍照</button>
+        <button onclick="sendBleCommand('record', true)">arLoupe 錄影鍵</button>
+        <button class="dangerBtn" onclick="sendBleCommand('power', true)">電源</button>
+      </div>
+    </div>
+
+    <div class="buttonRow">
+      <button onclick="loadBleStatus()">讀取狀態</button>
+      <button onclick="loadBleServices()">查看服務</button>
+    </div>
+    <p id="bleMessage"></p>
+    <details>
+      <summary>BLE 詳細資料</summary>
+      <pre id="bleRaw">-</pre>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>錄影檔案</h2>
+    <div class="videoToolbar">
+      <label for="videoDateSelect">日期</label>
+      <select id="videoDateSelect" onchange="loadVideoList(true)">
+        <option value="">最新日期</option>
+      </select>
+      <button onclick="loadVideoList(true)">重新整理</button>
+    </div>
+    <p id="videoMessage" class="small">尚未載入。</p>
+    <div id="videoList" class="videoList">
+      <div class="small">尚未載入。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Wi-Fi</h2>
+    <button id="scanButton" onclick="scanWifi()">掃描 Wi-Fi</button>
+    <span id="scanSource" class="pill grayPill">尚未掃描</span>
+    <div id="wifiCards" class="wifiList">
+      <div class="small">尚未掃描。</div>
+    </div>
+    <p id="wifiMessage"></p>
+  </div>
+
+  <div class="card">
+    <h2>連線狀態</h2>
+    <div class="jobBox">
+      <p>狀態：<span id="jobStatus">idle</span></p>
+      <p>步驟：<span id="jobStep">-</span></p>
+      <p>訊息：<span id="jobMessage">目前沒有任務</span></p>
+      <p>建議：<span id="jobSuggestion">-</span></p>
+      <p>新網址：<span id="jobAccessUrl">-</span></p>
+      <p>錯誤：</p>
+      <pre id="jobError">-</pre>
+      <details>
+        <summary>詳細資料</summary>
+        <pre id="jobRaw">-</pre>
+      </details>
+    </div>
+    <button onclick="loadJobStatus()">重新整理狀態</button>
+    <button onclick="clearJobStatus()">清除</button>
+  </div>
+  <!-- 使用傳統 defer script，保留原本 HTML onclick 呼叫方式與載入順序。 -->
+  <script defer src="/static/js/common.js"></script>
+  <script defer src="/static/js/network.js"></script>
+  <script defer src="/static/js/capture.js"></script>
+  <script defer src="/static/js/stream.js"></script>
+  <script defer src="/static/js/capture-config.js"></script>
+  <script defer src="/static/js/videos.js"></script>
+  <script defer src="/static/js/ble.js"></script>
+  <script defer src="/static/js/storage.js"></script>
+  <script defer src="/static/js/main.js"></script>
+</body>
+</html>

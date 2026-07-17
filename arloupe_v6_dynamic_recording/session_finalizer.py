@@ -1,4 +1,10 @@
-"""Post-recording cleanup for session files."""
+"""錄影停止後的 session 收尾整理。
+
+主要處理三件事：
+1. 固定段數錄影時，刪除 splitmuxsink 停止瞬間多開出的殘段。
+2. 將合法的 .mp4.tmp 改名成正式 .mp4。
+3. 補齊合法 MP4 segment 缺少的同名 JSON metadata。
+"""
 
 import time
 from pathlib import Path
@@ -18,7 +24,7 @@ from metadata_watcher import (
 
 
 def _safe_unlink(path: Path) -> None:
-    """Delete a file if it exists."""
+    """安全刪除檔案；不存在就忽略。"""
     try:
         if path.exists():
             path.unlink()
@@ -28,7 +34,7 @@ def _safe_unlink(path: Path) -> None:
 
 
 def _segment_index_for_session(video_path: Path, session_id: str) -> Optional[int]:
-    """Return the segment index for the current session only."""
+    """只接受目前 session 的 mp4 / mp4.tmp，並回傳 segment index。"""
     parsed_session_id, _device_id, segment_index = parse_segment_info(video_path.name)
 
     if parsed_session_id != session_id:
@@ -38,7 +44,7 @@ def _segment_index_for_session(video_path: Path, session_id: str) -> Optional[in
 
 
 def _delete_related_files(video_path: Path) -> None:
-    """Delete a segment and its related metadata or temp files."""
+    """刪除某段影片以及它可能產生的相關 metadata / 暫存檔。"""
     final_path = normalize_video_path(video_path)
     temp_path = final_path.with_name(final_path.name + TEMP_SUFFIX)
 
@@ -55,7 +61,7 @@ def _delete_related_files(video_path: Path) -> None:
 
 
 def _iter_session_video_paths(ctx: CaptureContext):
-    """Yield final and temp videos for the current session."""
+    """列出目前 session 的正式影片與暫存影片。"""
     patterns = [
         f"{ctx.session_id}_*_seg*.mp4",
         f"{ctx.session_id}_*_seg*.mp4.tmp",
@@ -70,7 +76,10 @@ def _iter_session_video_paths(ctx: CaptureContext):
 
 
 def wait_until_video_playable(video_path: Path) -> bool:
-    """Wait until ffprobe can read the video."""
+    """等待影片可被 ffprobe 正常讀取。
+
+    用在停止錄影後的最後一段，避免 mp4mux 還沒寫完 moov atom 就被改名。
+    """
     timeout = float(getattr(config, "RECORD_FINALIZE_WAIT_SECONDS", 15.0))
     interval = float(getattr(config, "RECORD_FINALIZE_POLL_SECONDS", 0.5))
     deadline = time.time() + timeout
@@ -89,7 +98,11 @@ def wait_until_video_playable(video_path: Path) -> bool:
 
 
 def cleanup_extra_segments(ctx: CaptureContext) -> None:
-    """In fixed-count mode, keep only seg00000 to seg{N-1}."""
+    """固定段數模式下，只保留 seg00000 ~ seg{N-1}。
+
+    例如 RECORD_SEGMENT_COUNT = 5，只保留 0~4。
+    停止瞬間若多出 seg00005.mp4 或 seg00005.mp4.tmp，會在這裡刪掉。
+    """
     if config.RECORD_CONTINUOUS:
         return
 
@@ -114,14 +127,18 @@ def cleanup_extra_segments(ctx: CaptureContext) -> None:
 
 
 def finalize_temp_segments(ctx: CaptureContext) -> None:
-    """Rename playable .mp4.tmp files to .mp4 after GStreamer stops."""
+    """GStreamer 停止後，將可播放的 .mp4.tmp 改名成 .mp4。
+
+    重點：不再無條件 force rename。必須等 ffprobe 驗證成功，
+    確認 MP4 已經正常 finalize 後，才會改名成正式 .mp4。
+    """
     for temp_path in sorted(ctx.segment_dir.glob(f"{ctx.session_id}_*_seg*.mp4.tmp")):
         segment_index = _segment_index_for_session(temp_path, ctx.session_id)
         if segment_index is None:
             continue
 
         if not config.RECORD_CONTINUOUS and segment_index >= int(config.RECORD_SEGMENT_COUNT):
-            # Defensive check; cleanup_extra_segments should have removed these.
+            # 理論上 cleanup_extra_segments 已刪除，這裡再保護一次。
             continue
 
         if temp_path.stat().st_size <= 0:
@@ -145,7 +162,11 @@ def finalize_temp_segments(ctx: CaptureContext) -> None:
 
 
 def ensure_missing_metadata(ctx: CaptureContext) -> None:
-    """Backfill missing JSON metadata for valid MP4 files."""
+    """錄影停止後，替合法 MP4 補齊缺少的 JSON。
+
+    metadata_watcher 可能在最後一段尚未穩定前就被停止，導致最後一段 MP4 有了，
+    但同名 JSON 還沒產生。這裡會在 pipeline 完全停止後再補一次。
+    """
     segment_limit: Optional[int] = None
     if not config.RECORD_CONTINUOUS:
         segment_limit = int(config.RECORD_SEGMENT_COUNT)
@@ -159,7 +180,7 @@ def ensure_missing_metadata(ctx: CaptureContext) -> None:
             continue
 
         if segment_limit is not None and segment_index >= segment_limit:
-            # Defensive check; cleanup_extra_segments should have removed these.
+            # 理論上 cleanup_extra_segments 已經刪掉，這裡再保護一次。
             continue
 
         valid_indices.add(segment_index)
@@ -184,7 +205,7 @@ def ensure_missing_metadata(ctx: CaptureContext) -> None:
 
 
 def finalize_session(ctx: CaptureContext) -> None:
-    """Run the full post-recording cleanup."""
+    """錄影完全停止後呼叫的總收尾流程。"""
     print("[INFO] Finalizing session files...")
     cleanup_extra_segments(ctx)
     finalize_temp_segments(ctx)

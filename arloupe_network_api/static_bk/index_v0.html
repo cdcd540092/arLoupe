@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>arLoupe 網路設定</title>
+  <style>
+    :root {
+      --border:#d9dee7; --bg:#f8fafc; --text:#111827; --muted:#6b7280;
+      --ok:#15803d; --warn:#b45309; --danger:#b91c1c; --blue:#1d4ed8;
+    }
+    body { font-family: Arial, "Microsoft JhengHei", sans-serif; margin:24px; line-height:1.55; max-width:980px; color:var(--text); }
+    h1 { margin:0 0 18px; }
+    h2 { margin:0 0 12px; }
+    .card { border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:16px; background:white; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:8px 14px; }
+    button { padding:10px 14px; margin:6px 6px 6px 0; font-size:15px; cursor:pointer; border-radius:9px; border:1px solid #aab2c0; background:white; }
+    button:hover { background:#f5f5f5; }
+    button:disabled { cursor:not-allowed; opacity:.55; }
+    .primary { border-color:var(--blue); color:white; background:var(--blue); }
+    .primary:hover { background:#1e40af; }
+    .dangerBtn { border-color:#fecaca; color:var(--danger); }
+    input, select { width:100%; box-sizing:border-box; padding:10px; font-size:16px; border-radius:9px; border:1px solid #aab2c0; margin-top:4px; }
+    pre { background:var(--bg); padding:12px; overflow-x:auto; border-radius:9px; font-size:13px; white-space:pre-wrap; word-break:break-word; }
+    .ok { color:var(--ok); font-weight:bold; }
+    .warn { color:var(--warn); font-weight:bold; }
+    .danger { color:var(--danger); font-weight:bold; }
+    .small { font-size:14px; color:var(--muted); }
+    .row { margin-bottom:12px; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:13px; margin:2px 4px 2px 0; }
+    .okPill { background:#dcfce7; color:#166534; }
+    .warnPill { background:#fef3c7; color:#92400e; }
+    .grayPill { background:#f3f4f6; color:#4b5563; }
+    .wifiList { display:grid; gap:10px; margin-top:12px; }
+    .wifiCard { border:1px solid var(--border); border-radius:12px; padding:14px; background:white; }
+    .wifiCard.active { border-color:#86efac; background:#f0fdf4; }
+    .wifiHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .ssid { font-size:18px; font-weight:bold; }
+    .wifiMeta { color:var(--muted); font-size:14px; margin:6px 0; }
+    .passwordPanel { margin-top:10px; padding:12px; border-radius:10px; background:var(--bg); display:none; }
+    .jobBox { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--bg); }
+    .buttonRow { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .videoToolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .videoToolbar select { width:auto; min-width:180px; margin-top:0; }
+
+    .videoList { display:grid; gap:12px; margin-top:12px; }
+    .videoDate { font-weight:bold; margin:14px 0 6px; color:var(--muted); }
+    .sessionCard { border:1px solid var(--border); border-radius:12px; background:white; overflow:hidden; }
+    .sessionCard summary { cursor:pointer; padding:14px; list-style:none; }
+    .sessionCard summary::-webkit-details-marker { display:none; }
+    .sessionSummary { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .sessionTitle { font-size:17px; font-weight:bold; }
+    .sessionMeta { color:var(--muted); font-size:14px; margin-top:5px; }
+    .sessionBody { border-top:1px solid var(--border); padding:10px 14px 14px; background:#fbfdff; }
+    .videoCard { border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:10px; background:white; }
+    .videoHeader { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .videoTitle { font-size:15px; font-weight:bold; word-break:break-all; }
+    .videoMeta { color:var(--muted); font-size:14px; margin:6px 0; }
+    .videoPanel { margin-top:10px; display:none; }
+    .videoPanel video { width:100%; max-height:520px; background:#000; border-radius:10px; }
+    .metaPanel { margin-top:10px; display:none; }
+
+    .bleGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px; margin-top:8px; }
+    .bleGroup { border:1px solid var(--border); border-radius:12px; padding:12px; background:#fbfdff; }
+    .bleGroupTitle { font-weight:bold; margin-bottom:6px; }
+
+    .streamBox { margin-top:10px; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#000; }
+    .streamBox iframe { width:100%; height:520px; border:0; display:block; background:#000; }
+
+    .cleanupList { display:grid; gap:10px; margin-top:12px; }
+    .cleanupItem { border:1px solid var(--border); border-radius:10px; padding:10px; background:white; }
+    .cleanupItemTitle { font-weight:bold; }
+  </style>
+</head>
+<body>
+  <h1>arLoupe 設定</h1>
+
+  <div class="card">
+    <h2>目前狀態</h2>
+    <div class="grid">
+      <div>模式：<span id="mode">讀取中...</span></div>
+      <div>IPv4：<span id="ipv4">讀取中...</span></div>
+      <div>網址：<span id="accessUrl">讀取中...</span></div>
+      <div>DHCP：<span id="dhcp">讀取中...</span></div>
+    </div>
+    <div class="buttonRow">
+      <button onclick="loadStatus()">重新整理</button>
+      <button id="toHotspotBtn" onclick="switchToHotspot()">切換到熱點</button>
+      <button id="toWifiBtn" onclick="switchToDefaultWifi()">切回 Wi-Fi</button>
+    </div>
+    <p id="modeMessage"></p>
+  </div>
+
+  <div class="card">
+    <h2>儲存空間</h2>
+    <div class="grid">
+      <div>剩餘：<span id="storageFree">讀取中...</span></div>
+      <div>已使用：<span id="storageUsed">讀取中...</span></div>
+      <div>總容量：<span id="storageTotal">讀取中...</span></div>
+      <div>使用率：<span id="storagePercent">讀取中...</span></div>
+    </div>
+
+    <div class="grid" style="margin-top:12px;">
+      <div>
+        <label>保留天數</label>
+        <input id="cleanupRetentionDays" type="number" min="0" max="3650" />
+      </div>
+      <div>
+        <label>低於多少 GB 自動刪除</label>
+        <input id="cleanupLowFreeGb" type="number" min="1" step="1" />
+      </div>
+      <div>
+        <label>刪除至多少 GB 停止</label>
+        <input id="cleanupTargetFreeGb" type="number" min="1" step="1" />
+      </div>
+      <div>
+        <label>單次最多刪除 session</label>
+        <input id="cleanupMaxDeleteSessions" type="number" min="0" step="1" placeholder="0 = 不限制" />
+      </div>
+    </div>
+
+    <div class="buttonRow">
+      <button onclick="loadStorageStatus()">重新整理</button>
+      <button onclick="loadCleanupSettings()">讀取清除設定</button>
+      <button onclick="saveCleanupSettings()">儲存清除設定</button>
+      <button onclick="previewCleanup()">預覽可刪除</button>
+      <button class="dangerBtn" onclick="runCleanup()">執行刪除</button>
+    </div>
+
+    <p id="storageMessage" class="small">尚未讀取。</p>
+    <div id="cleanupPreview" class="cleanupList"></div>
+    <details>
+      <summary>清理詳細資料</summary>
+      <pre id="cleanupRaw">-</pre>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>影像</h2>
+    <div class="grid">
+      <div>串流：<span id="captureStreaming">讀取中...</span></div>
+      <div>錄影：<span id="captureRecording">讀取中...</span></div>
+      <div>Session：<span id="captureSession">-</span></div>
+      <div>日期：<span id="captureDate">-</span></div>
+    </div>
+    <div class="buttonRow">
+      <button id="startStreamBtn" onclick="startStream()">啟動串流</button>
+      <button id="stopStreamBtn" onclick="stopStream()">停止串流</button>
+      <button id="startRecordBtn" class="primary" onclick="startRecording()">開始錄影</button>
+      <button id="stopRecordBtn" class="dangerBtn" onclick="stopRecording()">停止錄影</button>
+      <button onclick="loadCaptureStatus()">重新整理</button>
+    </div>
+    <p id="captureMessage"></p>
+  </div>
+
+
+
+
+
+  <div class="card">
+    <h2>即時畫面</h2>
+    <div class="buttonRow">
+      <button onclick="loadStreamViewer()">載入畫面</button>
+      <button onclick="reloadStreamViewer()">重新載入</button>
+      <button onclick="openStreamViewer()">另開視窗</button>
+      <span id="streamViewerUrlText" class="pill grayPill">尚未載入</span>
+    </div>
+    <p class="small">請先啟動串流，再載入畫面。</p>
+    <div class="streamBox">
+      <iframe
+        id="streamFrame"
+        title="arLoupe 即時畫面"
+        allow="autoplay; fullscreen"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <p id="streamViewerMessage"></p>
+  </div>
+
+  <div class="card">
+    <h2>影像參數</h2>
+    <div class="grid">
+      <div>
+        <label for="configFps">輸出 FPS</label>
+        <select id="configFps">
+          <option value="30">30 fps</option>
+          <option value="60">60 fps</option>
+        </select>
+      </div>
+      <div>
+        <label for="configBitrate">位元率 kbps</label>
+        <input id="configBitrate" type="number" min="1000" max="20000" step="500" />
+      </div>
+      <div>
+        <label for="configSegmentSeconds">分段時長 秒</label>
+        <input id="configSegmentSeconds" type="number" min="10" max="1800" step="10" />
+      </div>
+      <div>
+        <label>來源 FPS</label>
+        <div><span id="configInputFps" class="pill grayPill">60</span></div>
+      </div>
+      <div>
+        <label>Keyframe</label>
+        <div><span id="configKeyInt" class="pill grayPill">自動</span></div>
+      </div>
+    </div>
+    <div class="buttonRow">
+      <button onclick="loadCaptureConfig()">讀取設定</button>
+      <button onclick="saveCaptureConfig(false)">儲存設定</button>
+      <button id="applyCaptureConfigBtn" class="primary" onclick="applyCaptureConfig()">套用並重啟影像服務</button>
+    </div>
+    <p class="small">套用前請先停止串流與錄影；設定會寫入 capture_settings.json，重啟 7000 影像服務後生效。</p>
+    <p id="captureConfigMessage"></p>
+    <details>
+      <summary>影像參數詳細資料</summary>
+      <pre id="captureConfigRaw">-</pre>
+    </details>
+  </div>
+
+
+
+  <div class="card">
+    <h2>arLoupe 控制</h2>
+    <div class="grid">
+      <div>BLE：<span id="bleStatus">尚未讀取</span></div>
+      <div>最後指令：<span id="bleLastCommand">-</span></div>
+    </div>
+
+    <div class="bleGrid">
+      <div class="bleGroup">
+        <div class="bleGroupTitle">倍率</div>
+        <button class="primary" onclick="sendBleCommand('plus')">倍率 +</button>
+        <button onclick="sendBleCommand('minus')">倍率 -</button>
+      </div>
+
+      <div class="bleGroup">
+        <div class="bleGroupTitle">燈光 / 色溫</div>
+        <button onclick="sendBleCommand('led')">LED</button>
+        <button onclick="sendBleCommand('temp_plus')">色溫 +</button>
+        <button onclick="sendBleCommand('temp_minus')">色溫 -</button>
+      </div>
+
+      <div class="bleGroup">
+        <div class="bleGroupTitle">格柵</div>
+        <button onclick="sendBleCommand('grid1')">格柵 1</button>
+        <button onclick="sendBleCommand('grid2')">格柵 2</button>
+        <button onclick="sendBleCommand('grid3')">格柵 3</button>
+        <button onclick="sendBleCommand('grid4')">格柵 4</button>
+      </div>
+
+      <div class="bleGroup">
+        <div class="bleGroupTitle">其他</div>
+        <button onclick="sendBleCommand('photo')">拍照</button>
+        <button onclick="sendBleCommand('record', true)">arLoupe 錄影鍵</button>
+        <button class="dangerBtn" onclick="sendBleCommand('power', true)">電源</button>
+      </div>
+    </div>
+
+    <div class="buttonRow">
+      <button onclick="loadBleStatus()">讀取狀態</button>
+      <button onclick="loadBleServices()">查看服務</button>
+    </div>
+    <p id="bleMessage"></p>
+    <details>
+      <summary>BLE 詳細資料</summary>
+      <pre id="bleRaw">-</pre>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>錄影檔案</h2>
+    <div class="videoToolbar">
+      <label for="videoDateSelect">日期</label>
+      <select id="videoDateSelect" onchange="loadVideoList(true)">
+        <option value="">最新日期</option>
+      </select>
+      <button onclick="loadVideoList(true)">重新整理</button>
+    </div>
+    <p id="videoMessage" class="small">尚未載入。</p>
+    <div id="videoList" class="videoList">
+      <div class="small">尚未載入。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Wi-Fi</h2>
+    <button id="scanButton" onclick="scanWifi()">掃描 Wi-Fi</button>
+    <span id="scanSource" class="pill grayPill">尚未掃描</span>
+    <div id="wifiCards" class="wifiList">
+      <div class="small">尚未掃描。</div>
+    </div>
+    <p id="wifiMessage"></p>
+  </div>
+
+  <div class="card">
+    <h2>連線狀態</h2>
+    <div class="jobBox">
+      <p>狀態：<span id="jobStatus">idle</span></p>
+      <p>步驟：<span id="jobStep">-</span></p>
+      <p>訊息：<span id="jobMessage">目前沒有任務</span></p>
+      <p>建議：<span id="jobSuggestion">-</span></p>
+      <p>新網址：<span id="jobAccessUrl">-</span></p>
+      <p>錯誤：</p>
+      <pre id="jobError">-</pre>
+      <details>
+        <summary>詳細資料</summary>
+        <pre id="jobRaw">-</pre>
+      </details>
+    </div>
+    <button onclick="loadJobStatus()">重新整理狀態</button>
+    <button onclick="clearJobStatus()">清除</button>
+  </div>
+
+  <script>
+    let currentMode = "unknown";
+    let jobPollTimer = null;
+    let captureBusy = false;
+
+    function setMessage(elementId, text, className) {
+      const el = document.getElementById(elementId);
+      el.textContent = text;
+      el.className = className || "";
+    }
+
+    function cssSafeId(text) {
+      return btoa(unescape(encodeURIComponent(text))).replaceAll("=", "").replaceAll("+", "-").replaceAll("/", "_");
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatSignal(net) {
+      if (net.signal_dbm) return `${net.signal}% (${net.signal_dbm} dBm)`;
+      if (net.signal) return `${net.signal}%`;
+      return "未知";
+    }
+
+    function formatSecurity(net) {
+      return net.security || "未知";
+    }
+
+    function formatScanSource(source) {
+      if (source === "iw-ap-force") return "iw";
+      if (source === "nmcli-fallback") return "nmcli";
+      if (source === "nmcli") return "nmcli";
+      return source || "未知";
+    }
+
+    function updateModeActions(mode) {
+      const toHotspotBtn = document.getElementById("toHotspotBtn");
+      const toWifiBtn = document.getElementById("toWifiBtn");
+
+      if (mode === "wifi") {
+        toHotspotBtn.disabled = false;
+        toWifiBtn.disabled = true;
+      } else if (mode === "hotspot") {
+        toHotspotBtn.disabled = true;
+        toWifiBtn.disabled = false;
+      } else {
+        toHotspotBtn.disabled = false;
+        toWifiBtn.disabled = false;
+      }
+    }
+
+    async function loadStatus() {
+      const modeEl = document.getElementById("mode");
+      const ipv4El = document.getElementById("ipv4");
+      const accessUrlEl = document.getElementById("accessUrl");
+      const dhcpEl = document.getElementById("dhcp");
+
+      try {
+        const res = await fetch("/api/network/status");
+        const data = await res.json();
+        currentMode = data.mode || "unknown";
+
+        modeEl.textContent = currentMode;
+        ipv4El.textContent = data.ipv4 || "未知";
+        accessUrlEl.textContent = data.access_url || "未知";
+        dhcpEl.textContent = data.hotspot_dhcp || "unknown";
+        modeEl.className = (currentMode === "hotspot" || currentMode === "wifi") ? "ok" : "warn";
+        updateModeActions(currentMode);
+      } catch (err) {
+        currentMode = "unknown";
+        modeEl.textContent = "讀取失敗";
+        modeEl.className = "danger";
+        updateModeActions("unknown");
+      }
+    }
+
+    async function loadJobStatus() {
+      try {
+        const res = await fetch("/api/network/job/status");
+        const data = await res.json();
+
+        const statusEl = document.getElementById("jobStatus");
+        statusEl.textContent = data.status || "unknown";
+        statusEl.className = data.status === "success" ? "ok" : data.status === "failed" ? "danger" : data.status === "running" ? "warn" : "";
+
+        document.getElementById("jobStep").textContent = data.step || "-";
+        document.getElementById("jobMessage").textContent = data.message || "-";
+        document.getElementById("jobSuggestion").textContent = data.suggestion || "-";
+        document.getElementById("jobAccessUrl").textContent = data.access_url || "-";
+        document.getElementById("jobError").textContent = data.error || "-";
+        document.getElementById("jobRaw").textContent = JSON.stringify(data, null, 2);
+
+        if (["success", "failed", "idle"].includes(data.status)) stopJobPolling();
+      } catch (err) {
+        document.getElementById("jobStatus").textContent = "讀取失敗";
+        document.getElementById("jobStatus").className = "danger";
+        document.getElementById("jobError").textContent = String(err);
+      }
+    }
+
+    function startJobPolling() {
+      stopJobPolling();
+      loadJobStatus();
+      jobPollTimer = setInterval(loadJobStatus, 2000);
+    }
+
+    function stopJobPolling() {
+      if (jobPollTimer) {
+        clearInterval(jobPollTimer);
+        jobPollTimer = null;
+      }
+    }
+
+    async function clearJobStatus() {
+      try {
+        await fetch("/api/network/job/clear", { method: "POST" });
+      } finally {
+        loadJobStatus();
+      }
+    }
+
+    function captureApiBase() {
+      return `${window.location.protocol}//${window.location.hostname}:7000`;
+    }
+
+    function updateCaptureActions(data) {
+      const streaming = Boolean(data.streaming);
+      const recording = Boolean(data.recording);
+
+      document.getElementById("captureStreaming").textContent = streaming ? "運作中" : "未啟動";
+      document.getElementById("captureStreaming").className = streaming ? "ok" : "warn";
+      document.getElementById("captureRecording").textContent = recording ? "錄影中" : "未錄影";
+      document.getElementById("captureRecording").className = recording ? "danger" : "";
+      document.getElementById("captureSession").textContent = data.session_id || "-";
+      document.getElementById("captureDate").textContent = data.recording_date || "-";
+
+      document.getElementById("startStreamBtn").disabled = streaming;
+      document.getElementById("stopStreamBtn").disabled = !streaming || recording;
+      document.getElementById("startRecordBtn").disabled = recording;
+      document.getElementById("stopRecordBtn").disabled = !recording;
+
+      captureBusy = streaming || recording;
+      updateCaptureConfigActions();
+    }
+
+    async function loadCaptureStatus() {
+      try {
+        const res = await fetch(`${captureApiBase()}/api/capture/status`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        updateCaptureActions(data);
+        setMessage("captureMessage", "", "");
+      } catch (err) {
+        document.getElementById("captureStreaming").textContent = "讀取失敗";
+        document.getElementById("captureStreaming").className = "danger";
+        document.getElementById("captureRecording").textContent = "讀取失敗";
+        document.getElementById("captureRecording").className = "danger";
+        setMessage("captureMessage", "無法連線到 7000 capture API，請確認 arloupe-capture-api.service 是否運作。", "danger");
+      }
+    }
+
+    async function postCapture(path, body = null) {
+      const options = { method: "POST" };
+      if (body !== null) {
+        options.headers = { "Content-Type": "application/json" };
+        options.body = JSON.stringify(body);
+      }
+
+      const res = await fetch(`${captureApiBase()}${path}`, options);
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch (_) { data = { raw: text }; }
+
+      if (!res.ok) {
+        const detail = data.detail || data.raw || `HTTP ${res.status}`;
+        throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+      }
+      return data;
+    }
+
+    async function startStream() {
+      setMessage("captureMessage", "正在啟動串流...", "warn");
+      try {
+        await postCapture("/api/stream/start");
+        setMessage("captureMessage", "串流已啟動", "ok");
+        setTimeout(loadStreamViewer, 800);
+      } catch (err) {
+        setMessage("captureMessage", `啟動串流失敗：${err}`, "danger");
+      } finally {
+        loadCaptureStatus();
+      }
+    }
+
+    async function stopStream() {
+      if (!confirm("停止串流？")) return;
+      setMessage("captureMessage", "正在停止串流...", "warn");
+      try {
+        await postCapture("/api/stream/stop");
+        setMessage("captureMessage", "串流已停止", "ok");
+      } catch (err) {
+        setMessage("captureMessage", `停止串流失敗：${err}`, "danger");
+      } finally {
+        loadCaptureStatus();
+      }
+    }
+
+    async function startRecording() {
+      setMessage("captureMessage", "正在開始錄影...", "warn");
+      try {
+        const data = await postCapture("/api/capture/start", {});
+        setMessage("captureMessage", `錄影已開始：${data.session_id || ""}`, "ok");
+      } catch (err) {
+        setMessage("captureMessage", `開始錄影失敗：${err}`, "danger");
+      } finally {
+        loadCaptureStatus();
+      }
+    }
+
+    async function stopRecording() {
+      if (!confirm("停止錄影？")) return;
+      setMessage("captureMessage", "正在停止錄影並收尾 MP4...", "warn");
+      try {
+        const data = await postCapture("/api/capture/stop");
+        setMessage("captureMessage", `錄影已停止：${data.session_id || ""}`, "ok");
+      } catch (err) {
+        setMessage("captureMessage", `停止錄影失敗：${err}`, "danger");
+      } finally {
+        loadCaptureStatus();
+      }
+    }
+
+
+    function streamViewerUrl() {
+      return `${window.location.protocol}//${window.location.hostname}:8889/arloupe`;
+    }
+
+    function loadStreamViewer() {
+      const frame = document.getElementById("streamFrame");
+      const url = streamViewerUrl();
+
+      if (!frame) return;
+
+      frame.src = url;
+      document.getElementById("streamViewerUrlText").textContent = url;
+      setMessage("streamViewerMessage", `已載入即時畫面：${url}`, "ok");
+    }
+
+    function reloadStreamViewer() {
+      const frame = document.getElementById("streamFrame");
+      if (!frame) return;
+
+      if (!frame.src) {
+        loadStreamViewer();
+        return;
+      }
+
+      const currentUrl = frame.src;
+      frame.src = "";
+      setTimeout(() => {
+        frame.src = currentUrl;
+      }, 200);
+
+      setMessage("streamViewerMessage", "已重新載入即時畫面", "ok");
+    }
+
+    function openStreamViewer() {
+      window.open(streamViewerUrl(), "_blank");
+    }
+
+
+    function updateCaptureConfigActions() {
+      const applyBtn = document.getElementById("applyCaptureConfigBtn");
+      if (!applyBtn) return;
+      applyBtn.disabled = captureBusy;
+      if (captureBusy) {
+        applyBtn.title = "請先停止串流與錄影後再套用設定";
+      } else {
+        applyBtn.title = "";
+      }
+    }
+
+    async function loadCaptureConfig() {
+      try {
+        const res = await fetch("/api/config/capture");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        document.getElementById("configFps").value = String(data.fps || 30);
+        document.getElementById("configBitrate").value = data.bitrate_kbps || 5000;
+        document.getElementById("configSegmentSeconds").value = data.segment_seconds || 300;
+        document.getElementById("configInputFps").textContent = `${data.input_fps || 60} fps`;
+        document.getElementById("configKeyInt").textContent = `${data.key_int_max || data.fps || 30}`;
+        document.getElementById("captureConfigRaw").textContent = JSON.stringify(data, null, 2);
+        setMessage("captureConfigMessage", "影像參數已讀取", "ok");
+      } catch (err) {
+        setMessage("captureConfigMessage", `影像參數讀取失敗：${err}`, "danger");
+        document.getElementById("captureConfigRaw").textContent = String(err);
+      }
+    }
+
+    function getCaptureConfigFormData() {
+      const fps = Number(document.getElementById("configFps").value);
+      const bitrate = Number(document.getElementById("configBitrate").value);
+      const segmentSeconds = Number(document.getElementById("configSegmentSeconds").value);
+
+      return {
+        input_fps: 60,
+        fps: fps,
+        bitrate_kbps: bitrate,
+        segment_seconds: segmentSeconds,
+        auto_key_int: true
+      };
+    }
+
+    async function saveCaptureConfig(silent = false) {
+      if (!silent) setMessage("captureConfigMessage", "正在儲存影像參數...", "warn");
+
+      const res = await fetch("/api/config/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(getCaptureConfigFormData())
+      });
+
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch (_) { data = { raw: text }; }
+
+      if (!res.ok) {
+        const detail = data.detail || data.raw || `HTTP ${res.status}`;
+        throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+      }
+
+      document.getElementById("captureConfigRaw").textContent = JSON.stringify(data, null, 2);
+      if (!silent) setMessage("captureConfigMessage", data.message || "影像參數已儲存", "ok");
+      return data;
+    }
+
+    async function applyCaptureConfig() {
+      if (captureBusy) {
+        alert("請先停止串流與錄影後再套用設定。");
+        return;
+      }
+
+      const ok = confirm("會先儲存設定，並重啟 7000 影像服務。確定要套用嗎？");
+      if (!ok) return;
+
+      setMessage("captureConfigMessage", "正在儲存並套用設定...", "warn");
+
+      try {
+        await saveCaptureConfig(true);
+        const res = await fetch("/api/config/capture/apply", { method: "POST" });
+        const text = await res.text();
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch (_) { data = { raw: text }; }
+
+        if (!res.ok) {
+          const detail = data.detail || data.raw || `HTTP ${res.status}`;
+          throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+        }
+
+        document.getElementById("captureConfigRaw").textContent = JSON.stringify(data, null, 2);
+        setMessage("captureConfigMessage", data.message || "設定已套用", "ok");
+        setTimeout(loadCaptureStatus, 1500);
+      } catch (err) {
+        setMessage("captureConfigMessage", `套用設定失敗：${err}`, "danger");
+      }
+    }
+
+
+    function formatDuration(seconds) {
+      if (seconds === null || seconds === undefined || seconds === "") return "未知";
+      const total = Math.round(Number(seconds));
+      if (!Number.isFinite(total)) return "未知";
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const sec = total % 60;
+      if (h > 0) return `${h} 小時 ${String(m).padStart(2, "0")} 分`;
+      if (m > 0) return `${m} 分 ${String(sec).padStart(2, "0")} 秒`;
+      return `${sec} 秒`;
+    }
+
+    function formatDateTime(text) {
+      if (!text) return "未知時間";
+      return String(text).replace("T", " ");
+    }
+
+    function videoPanelId(item, suffix) {
+      return `${suffix}-${cssSafeId(item.recording_date + "-" + item.filename)}`;
+    }
+
+    function updateVideoDateSelect(availableDates, selectedDate) {
+      const select = document.getElementById("videoDateSelect");
+      if (!select) return;
+
+      const currentValue = select.value;
+      const nextValue = selectedDate || currentValue || "";
+      select.innerHTML = "";
+
+      const latestOption = document.createElement("option");
+      latestOption.value = "";
+      latestOption.textContent = availableDates && availableDates.length > 0
+        ? `最新日期（${availableDates[0]}）`
+        : "最新日期";
+      select.appendChild(latestOption);
+
+      (availableDates || []).forEach(dateText => {
+        const option = document.createElement("option");
+        option.value = dateText;
+        option.textContent = dateText;
+        select.appendChild(option);
+      });
+
+      if (availableDates && availableDates.length > 1) {
+        const allOption = document.createElement("option");
+        allOption.value = "all";
+        allOption.textContent = "全部日期";
+        select.appendChild(allOption);
+      }
+
+      if (nextValue === "all") {
+        select.value = "all";
+      } else if (availableDates && availableDates.includes(nextValue)) {
+        select.value = nextValue;
+      } else {
+        select.value = "";
+      }
+    }
+
+    async function loadVideoList(keepSelectedDate = false) {
+      const videoList = document.getElementById("videoList");
+      const dateSelect = document.getElementById("videoDateSelect");
+      const selectedDate = keepSelectedDate && dateSelect ? dateSelect.value : "";
+      const query = selectedDate ? `?date=${encodeURIComponent(selectedDate)}&limit=300` : "?limit=300";
+
+      setMessage("videoMessage", "載入中...", "warn");
+      videoList.innerHTML = `<div class="small">載入中...</div>`;
+
+      try {
+        const res = await fetch(`/api/videos/list${query}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        updateVideoDateSelect(data.available_dates || [], data.selected_date || selectedDate || "");
+        videoList.innerHTML = "";
+
+        if (!data.dates || data.dates.length === 0) {
+          videoList.innerHTML = `<div class="small">目前沒有錄影檔案。</div>`;
+          setMessage("videoMessage", "目前沒有錄影檔案", "warn");
+          return;
+        }
+
+        data.dates.forEach(group => renderVideoDateGroup(group));
+
+        const selectedText = data.selected_date === "all"
+          ? "全部日期"
+          : (data.selected_date || "最新日期");
+        setMessage(
+          "videoMessage",
+          `${selectedText}｜${data.total_sessions || 0} 個 session，${data.total_videos || data.total || 0} 個影片`,
+          "ok"
+        );
+      } catch (err) {
+        videoList.innerHTML = `<div class="danger">載入失敗：${escapeHtml(String(err))}</div>`;
+        setMessage("videoMessage", "錄影檔案載入失敗", "danger");
+      }
+    }
+
+    function renderVideoDateGroup(group) {
+      const videoList = document.getElementById("videoList");
+      const title = document.createElement("div");
+      title.className = "videoDate";
+      title.textContent = `${group.date || "未知日期"} ｜ ${group.session_count || 0} 個 session ｜ ${group.video_count || 0} 段`;
+      videoList.appendChild(title);
+
+      (group.sessions || []).forEach(session => renderVideoSession(session, videoList));
+    }
+
+    function renderVideoSession(session, parent) {
+      const details = document.createElement("details");
+      details.className = "sessionCard";
+
+      const startedAt = formatDateTime(session.started_at);
+      const durationText = formatDuration(session.total_duration_seconds);
+      const sizeText = `${session.total_size_mb || 0} MB`;
+      const uploadText = session.upload_status || "unknown";
+      const sessionId = session.session_id || "unknown";
+
+      details.innerHTML = `
+        <summary>
+          <div class="sessionSummary">
+            <div>
+              <div class="sessionTitle">Session ${escapeHtml(sessionId)}</div>
+              <div class="sessionMeta">${escapeHtml(startedAt)} ｜ ${session.segment_count || 0} 段 ｜ ${escapeHtml(sizeText)} ｜ ${escapeHtml(durationText)}</div>
+            </div>
+            <div>
+              ${session.device_id ? `<span class="pill grayPill">${escapeHtml(session.device_id)}</span>` : ""}
+              <span class="pill grayPill">${escapeHtml(uploadText)}</span>
+              <span class="pill ${session.metadata_count === session.segment_count ? "okPill" : "warnPill"}">JSON ${session.metadata_count || 0}/${session.segment_count || 0}</span>
+            </div>
+          </div>
+        </summary>
+        <div class="sessionBody"></div>
+      `;
+
+      const body = details.querySelector(".sessionBody");
+      (session.videos || []).forEach(item => renderVideoItem(item, body));
+      parent.appendChild(details);
+    }
+
+    function renderVideoItem(item, parent) {
+      const card = document.createElement("div");
+      card.className = "videoCard";
+
+      const playerId = videoPanelId(item, "player");
+      const metaId = videoPanelId(item, "meta");
+      const durationText = formatDuration(item.duration_seconds);
+      const uploadText = item.upload_status || "unknown";
+      const segText = item.segment_index !== null && item.segment_index !== undefined
+        ? `seg${String(item.segment_index).padStart(5, "0")}`
+        : "seg?";
+      const metadataButton = item.metadata_exists
+        ? `<button onclick='toggleVideoMetadata(${JSON.stringify(metaId)}, ${JSON.stringify(item.metadata_url)})'>Metadata</button>`
+        : "";
+
+      card.innerHTML = `
+        <div class="videoHeader">
+          <div>
+            <div class="videoTitle">${escapeHtml(segText)} ｜ ${escapeHtml(item.filename)}</div>
+            <div>
+              ${item.metadata_exists ? `<span class="pill okPill">JSON</span>` : `<span class="pill warnPill">無 JSON</span>`}
+              <span class="pill grayPill">${escapeHtml(uploadText)}</span>
+            </div>
+          </div>
+          <div class="buttonRow">
+            <button class="primary" onclick='toggleVideoPlayer(${JSON.stringify(playerId)}, ${JSON.stringify(item.url)})'>播放</button>
+            <a href="${escapeHtml(item.download_url || item.url)}" download>
+              <button type="button">下載</button>
+            </a>
+            ${metadataButton}
+          </div>
+        </div>
+        <div class="videoMeta">
+          大小：${escapeHtml(String(item.size_mb))} MB ｜ 時長：${escapeHtml(durationText)} ｜ 修改：${escapeHtml(item.modified_at || "-")}
+        </div>
+        <div id="${playerId}" class="videoPanel"></div>
+        <div id="${metaId}" class="metaPanel">
+          <pre>尚未載入</pre>
+        </div>
+      `;
+
+      parent.appendChild(card);
+    }
+
+    function toggleVideoPlayer(panelId, url) {
+      const panel = document.getElementById(panelId);
+      if (!panel) return;
+
+      if (panel.style.display === "block") {
+        panel.style.display = "none";
+        panel.innerHTML = "";
+        return;
+      }
+
+      panel.style.display = "block";
+      panel.innerHTML = `
+        <video controls preload="metadata" src="${escapeHtml(url)}"></video>
+      `;
+    }
+
+    async function toggleVideoMetadata(panelId, url) {
+      const panel = document.getElementById(panelId);
+      if (!panel) return;
+
+      if (panel.style.display === "block") {
+        panel.style.display = "none";
+        return;
+      }
+
+      panel.style.display = "block";
+      panel.innerHTML = `<pre>載入中...</pre>`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        panel.innerHTML = `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+      } catch (err) {
+        panel.innerHTML = `<pre>Metadata 載入失敗：${escapeHtml(String(err))}</pre>`;
+      }
+    }
+
+
+
+    async function runBleRequest(url, options = {}) {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch (_) { data = { raw: text }; }
+
+      if (!res.ok) {
+        const detail = data.detail || data.raw || `HTTP ${res.status}`;
+        throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+      }
+      return data;
+    }
+
+    function updateBleResult(data) {
+      const ok = Boolean(data.ok);
+      document.getElementById("bleStatus").textContent = ok ? "正常" : "失敗";
+      document.getElementById("bleStatus").className = ok ? "ok" : "danger";
+      document.getElementById("bleLastCommand").textContent = data.command || "-";
+      document.getElementById("bleRaw").textContent = JSON.stringify(data, null, 2);
+
+      const message = data.stdout || data.stderr || data.message || "完成";
+      setMessage("bleMessage", message, ok ? "ok" : "danger");
+    }
+
+    async function sendBleCommand(command, needConfirm = false) {
+      if (needConfirm && !confirm(`送出 ${command} 指令？`)) return;
+
+      setMessage("bleMessage", `正在送出 ${command}...`, "warn");
+      document.getElementById("bleLastCommand").textContent = command;
+
+      try {
+        const data = await runBleRequest("/api/ble/command", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ command: command })
+        });
+        updateBleResult(data);
+      } catch (err) {
+        document.getElementById("bleStatus").textContent = "失敗";
+        document.getElementById("bleStatus").className = "danger";
+        document.getElementById("bleRaw").textContent = String(err);
+        setMessage("bleMessage", `BLE 指令失敗：${err}`, "danger");
+      }
+    }
+
+    async function loadBleStatus() {
+      setMessage("bleMessage", "正在讀取 BLE 狀態...", "warn");
+      try {
+        const data = await runBleRequest("/api/ble/status");
+        updateBleResult(data);
+      } catch (err) {
+        document.getElementById("bleStatus").textContent = "讀取失敗";
+        document.getElementById("bleStatus").className = "danger";
+        document.getElementById("bleRaw").textContent = String(err);
+        setMessage("bleMessage", `BLE 狀態讀取失敗：${err}`, "danger");
+      }
+    }
+
+    async function loadBleServices() {
+      setMessage("bleMessage", "正在讀取 BLE 服務...", "warn");
+      try {
+        const data = await runBleRequest("/api/ble/services");
+        updateBleResult(data);
+      } catch (err) {
+        document.getElementById("bleRaw").textContent = String(err);
+        setMessage("bleMessage", `BLE 服務讀取失敗：${err}`, "danger");
+      }
+    }
+
+
+    async function loadStorageStatus() {
+      try {
+        const res = await fetch("/api/storage/status");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const storage = data.storage || data;
+
+        document.getElementById("storageFree").textContent = `${storage.free_gb ?? "?"} GB`;
+        document.getElementById("storageUsed").textContent = `${storage.used_gb ?? "?"} GB`;
+        document.getElementById("storageTotal").textContent = `${storage.total_gb ?? "?"} GB`;
+        document.getElementById("storagePercent").textContent = `${storage.used_percent ?? "?"}%`;
+        document.getElementById("cleanupRaw").textContent = JSON.stringify(data, null, 2);
+        setMessage("storageMessage", `容量已更新：剩餘 ${storage.free_gb ?? "?"} GB`, "ok");
+      } catch (err) {
+        setMessage("storageMessage", `容量讀取失敗：${err}`, "danger");
+      }
+    }
+
+    async function loadCleanupSettings() {
+      try {
+        const res = await fetch("/api/storage/cleanup/settings");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const s = data.settings || {};
+
+        document.getElementById("cleanupRetentionDays").value = s.retention_days ?? 7;
+        document.getElementById("cleanupLowFreeGb").value = s.low_free_gb ?? 20;
+        document.getElementById("cleanupTargetFreeGb").value = s.target_free_gb ?? 30;
+        document.getElementById("cleanupMaxDeleteSessions").value = s.max_delete_sessions ?? 0;
+        document.getElementById("cleanupRaw").textContent = JSON.stringify(data, null, 2);
+        setMessage("storageMessage", "清理設定已讀取", "ok");
+      } catch (err) {
+        setMessage("storageMessage", `清理設定讀取失敗：${err}`, "danger");
+      }
+    }
+
+    async function saveCleanupSettings() {
+      const payload = {
+        retention_days: Number(document.getElementById("cleanupRetentionDays").value || 7),
+        low_free_gb: Number(document.getElementById("cleanupLowFreeGb").value || 20),
+        target_free_gb: Number(document.getElementById("cleanupTargetFreeGb").value || 30),
+        max_delete_sessions: Number(document.getElementById("cleanupMaxDeleteSessions").value || 0),
+        delete_pending_when_critical: false
+      };
+
+      setMessage("storageMessage", "正在儲存清理設定...", "warn");
+      try {
+        const res = await fetch("/api/storage/cleanup/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(JSON.stringify(data.detail || data));
+        document.getElementById("cleanupRaw").textContent = JSON.stringify(data, null, 2);
+        setMessage("storageMessage", "清理設定已儲存", "ok");
+      } catch (err) {
+        setMessage("storageMessage", `清理設定儲存失敗：${err}`, "danger");
+      }
+    }
+
+    function renderCleanupPreview(data) {
+      const box = document.getElementById("cleanupPreview");
+      const candidates = data.candidates || [];
+      box.innerHTML = "";
+
+      if (candidates.length === 0) {
+        box.innerHTML = `<div class="small">沒有符合條件的可清理 session。</div>`;
+        return;
+      }
+
+      candidates.slice(0, 20).forEach(item => {
+        const div = document.createElement("div");
+        div.className = "cleanupItem";
+        div.innerHTML = `
+          <div class="cleanupItemTitle">${escapeHtml(item.recording_date)} ｜ ${escapeHtml(item.session_id)}</div>
+          <div class="small">
+            ${escapeHtml(String(item.video_count || 0))} 段 ｜ ${escapeHtml(String(item.size_mb || 0))} MB ｜ ${escapeHtml(String(item.age_days || "?"))} 天前
+          </div>
+        `;
+        box.appendChild(div);
+      });
+
+      if (candidates.length > 20) {
+        const more = document.createElement("div");
+        more.className = "small";
+        more.textContent = `還有 ${candidates.length - 20} 個 session 未顯示。`;
+        box.appendChild(more);
+      }
+    }
+
+    async function previewCleanup() {
+      setMessage("storageMessage", "正在預覽可清理資料...", "warn");
+      try {
+        const res = await fetch("/api/storage/cleanup/preview");
+        const data = await res.json();
+        if (!res.ok) throw new Error(JSON.stringify(data.detail || data));
+        document.getElementById("cleanupRaw").textContent = JSON.stringify(data, null, 2);
+        renderCleanupPreview(data);
+        setMessage("storageMessage", `可清理 ${data.candidate_count || 0} 個 session，約 ${data.freeable_gb || 0} GB`, "ok");
+        loadStorageStatus();
+      } catch (err) {
+        setMessage("storageMessage", `清理預覽失敗：${err}`, "danger");
+      }
+    }
+
+    async function runCleanup() {
+      if (!confirm("確定要刪除已上傳且超過保留天數的舊錄影？\n\n此動作無法復原。")) return;
+
+      setMessage("storageMessage", "正在執行清理...", "warn");
+      try {
+        const res = await fetch("/api/storage/cleanup/run", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(JSON.stringify(data.detail || data));
+        document.getElementById("cleanupRaw").textContent = JSON.stringify(data, null, 2);
+        setMessage("storageMessage", `清理完成：刪除 ${data.deleted_sessions || 0} 個 session，釋放 ${data.freed_gb || 0} GB`, "ok");
+        await loadStorageStatus();
+        await previewCleanup();
+        await loadVideoList(true);
+      } catch (err) {
+        setMessage("storageMessage", `清理失敗：${err}`, "danger");
+      }
+    }
+
+    async function switchToHotspot() {
+      if (!confirm("切換到熱點模式？")) return;
+      setMessage("modeMessage", "正在切換到熱點...", "warn");
+      try {
+        const res = await fetch("/api/network/hotspot", { method: "POST" });
+        const data = await res.json();
+        setMessage("modeMessage", data.message || "已送出切換指令", "warn");
+        startJobPolling();
+      } catch (err) {
+        setMessage("modeMessage", "指令可能已送出，請改連 arLoupe-Setup。", "warn");
+      }
+    }
+
+    async function switchToDefaultWifi() {
+      if (!confirm("切回預設 Wi-Fi？")) return;
+      setMessage("modeMessage", "正在切回 Wi-Fi...", "warn");
+      try {
+        const res = await fetch("/api/network/wifi", { method: "POST" });
+        const data = await res.json();
+        setMessage("modeMessage", data.message || "已送出切換指令", "warn");
+        startJobPolling();
+      } catch (err) {
+        setMessage("modeMessage", "指令可能已送出，請改連外部 Wi-Fi。", "warn");
+      }
+    }
+
+    async function scanWifi() {
+      const wifiCards = document.getElementById("wifiCards");
+      const scanButton = document.getElementById("scanButton");
+      const scanSourceEl = document.getElementById("scanSource");
+
+      setMessage("wifiMessage", "掃描中...", "warn");
+      scanButton.disabled = true;
+      wifiCards.innerHTML = `<div class="small">掃描中...</div>`;
+
+      try {
+        const res = await fetch("/api/network/wifi/scan");
+        const data = await res.json();
+
+        wifiCards.innerHTML = "";
+        scanSourceEl.textContent = `${data.scan_strategy || "未知"}｜${data.mode || "unknown"}`;
+
+        if (!data.networks || data.networks.length === 0) {
+          wifiCards.innerHTML = `<div class="small">找不到 Wi-Fi。</div>`;
+          setMessage("wifiMessage", "找不到 Wi-Fi", "warn");
+          return;
+        }
+
+        data.networks.forEach(net => renderWifiCard(net));
+        setMessage("wifiMessage", `掃描完成，共 ${data.networks.length} 個`, "ok");
+      } catch (err) {
+        wifiCards.innerHTML = `<div class="danger">掃描失敗：${escapeHtml(String(err))}</div>`;
+        setMessage("wifiMessage", "掃描失敗", "danger");
+      } finally {
+        scanButton.disabled = false;
+      }
+    }
+
+    function renderWifiCard(net) {
+      const wifiCards = document.getElementById("wifiCards");
+      const id = cssSafeId(net.ssid);
+      const card = document.createElement("div");
+      card.className = "wifiCard" + (net.active ? " active" : "");
+
+      const savedPill = net.saved ? `<span class="pill okPill">已儲存</span>` : `<span class="pill warnPill">未知</span>`;
+      const activePill = net.active ? `<span class="pill okPill">目前連線</span>` : "";
+      const connPill = net.connection_name ? `<span class="pill grayPill">${escapeHtml(net.connection_name)}</span>` : "";
+      const connectButton = net.active ? "" : (net.saved
+        ? `<button class="primary" onclick='connectSavedWifi(${JSON.stringify(net.ssid)}, ${JSON.stringify(net.connection_name || "")})'>連線</button>`
+        : `<button class="primary" onclick='showPasswordPanel(${JSON.stringify(id)})'>輸入密碼</button>`);
+
+      card.innerHTML = `
+        <div class="wifiHeader">
+          <div>
+            <div class="ssid">${escapeHtml(net.ssid)}</div>
+            <div>${savedPill}${activePill}${connPill}</div>
+          </div>
+          <div>
+            ${connectButton}
+            ${net.saved ? `<button onclick='showPasswordPanel(${JSON.stringify(id)})'>重新輸入密碼</button>` : ""}
+            ${net.saved ? `<button class="dangerBtn" onclick='forgetWifi(${JSON.stringify(net.ssid)}, ${JSON.stringify(net.connection_name || "")})'>刪除</button>` : ""}
+          </div>
+        </div>
+        <div class="wifiMeta">
+          訊號：${escapeHtml(formatSignal(net))} ｜ 安全性：${escapeHtml(formatSecurity(net))} ｜ 來源：${escapeHtml(formatScanSource(net.scan_source))}
+        </div>
+        <div id="panel-${id}" class="passwordPanel">
+          <div class="row">
+            <label>SSID</label>
+            <input id="ssid-${id}" value="${escapeHtml(net.ssid)}" />
+          </div>
+          <div class="row">
+            <label>Wi-Fi 密碼</label>
+            <input id="password-${id}" type="password" placeholder="請輸入 Wi-Fi 密碼" />
+          </div>
+          <button class="primary" onclick='connectWithPassword(${JSON.stringify(id)})'>連線</button>
+          <button onclick='hidePasswordPanel(${JSON.stringify(id)})'>取消</button>
+        </div>
+      `;
+
+      wifiCards.appendChild(card);
+    }
+
+    function showPasswordPanel(id) {
+      document.getElementById(`panel-${id}`).style.display = "block";
+      const passwordEl = document.getElementById(`password-${id}`);
+      if (passwordEl) passwordEl.focus();
+    }
+
+    function hidePasswordPanel(id) {
+      document.getElementById(`panel-${id}`).style.display = "none";
+    }
+
+    async function connectSavedWifi(ssid, connectionName) {
+      if (!confirm(`連線到 ${ssid || connectionName}？`)) return;
+      setMessage("wifiMessage", `正在連線到 ${ssid || connectionName}...`, "warn");
+      await clearJobStatus();
+
+      try {
+        const res = await fetch("/api/network/wifi/connect-saved", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ssid: ssid, connection_name: connectionName })
+        });
+        const data = await res.json();
+        setMessage("wifiMessage", data.message || "已開始連線", "warn");
+        startJobPolling();
+      } catch (err) {
+        setMessage("wifiMessage", "指令可能已送出，請查看是否已切換 Wi-Fi。", "warn");
+      }
+    }
+
+    async function connectWithPassword(id) {
+      const ssid = document.getElementById(`ssid-${id}`).value.trim();
+      const password = document.getElementById(`password-${id}`).value;
+      if (!ssid) return alert("SSID 不可為空");
+      if (!confirm(`連線到 ${ssid}？`)) return;
+
+      setMessage("wifiMessage", `正在連線到 ${ssid}...`, "warn");
+      await clearJobStatus();
+
+      try {
+        const res = await fetch("/api/network/wifi/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ssid: ssid, password: password })
+        });
+        const data = await res.json();
+        setMessage("wifiMessage", data.message || "已開始連線", "warn");
+        startJobPolling();
+      } catch (err) {
+        setMessage("wifiMessage", "指令可能已送出，請查看是否已切換 Wi-Fi。", "warn");
+      }
+    }
+
+    async function forgetWifi(ssid, connectionName) {
+      if (!confirm(`刪除 ${ssid || connectionName}？`)) return;
+      setMessage("wifiMessage", `正在刪除 ${ssid || connectionName}...`, "warn");
+      await clearJobStatus();
+
+      try {
+        const res = await fetch("/api/network/wifi/forget", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ssid: ssid, connection_name: connectionName })
+        });
+        const data = await res.json();
+        setMessage("wifiMessage", data.message || "已送出刪除指令", "warn");
+        startJobPolling();
+        setTimeout(scanWifi, 2500);
+      } catch (err) {
+        setMessage("wifiMessage", "刪除失敗：" + String(err), "danger");
+      }
+    }
+
+    loadStatus();
+    loadStorageStatus();
+    loadCleanupSettings();
+    loadCaptureStatus();
+    loadJobStatus();
+    loadVideoList();
+    loadBleStatus();
+    loadCaptureConfig();
+    setInterval(loadCaptureStatus, 5000);
+  </script>
+</body>
+</html>
