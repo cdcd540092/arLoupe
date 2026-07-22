@@ -1,5 +1,0 @@
-{
-  "name": "Phase 2 Admin Suite",
-  "description": "A comprehensive React Admin Dashboard implementing RBAC, Audit Logging, and AI-driven HIPAA Compliance verification for the Phase 2 API Integration plan.",
-  "requestFramePermissions": []
-}
