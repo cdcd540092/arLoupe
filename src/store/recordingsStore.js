@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import api from '@/api';
 
 export const useRecordingsStore = defineStore('recordings', () => {
     // 原始數據
@@ -45,10 +46,8 @@ export const useRecordingsStore = defineStore('recordings', () => {
     async function fetchRecordings() {
         loading.value = true;
         try {
-            const response = await fetch('/api/videos/');
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const data = await response.json();
+            const response = await api.get('/videos/');
+            const data = response.data;
             
             if (data && data.length > 0) {
                 // 將 Django 的資料結構對應回前端預期的格式

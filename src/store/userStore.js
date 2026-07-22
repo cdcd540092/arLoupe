@@ -12,14 +12,17 @@ export const useUserStore = defineStore('user', {
     }),
     getters: {
         isAdmin: (state) => state.role === 'admin',
-        isStaff: (state) => state.role === 'staff',
+        isDoctor: (state) => state.role === 'doctor',
         isPatient: (state) => state.role === 'patient'
     },
     actions: {
         setUser(user) {
             this.user = user;
             this.isAuthenticated = !!user;
-            this.role = user?.role || null;
+            
+            // Normalize role to lowercase for frontend routing
+            let r = user?.role ? user.role.toLowerCase() : null;
+            this.role = r;
         },
         setToken(token) {
             this.token = token;
@@ -30,7 +33,8 @@ export const useUserStore = defineStore('user', {
             try {
                 // 發送真實請求到後端 API
                 const response = await auth.login(credentials);
-                const { token, user } = response.data;
+                // JWT 預設回傳的是 access 與 refresh token，解構出 access 並重新命名為 token
+                const { access: token, user } = response.data;
 
                 this.setToken(token);
                 this.setUser(user);

@@ -17,13 +17,13 @@ const routes = [
         path: '/live',
         name: 'LiveStream',
         component: LiveViewUI,
-        meta: { requiresAuth: true, role: ['admin', 'staff'] }
+        meta: { requiresAuth: true, role: ['admin', 'doctor'] }
     },
     {
         path: '/',
         name: 'ClinicalViewer',
         component: ViewerUI,
-        meta: { requiresAuth: true, role: ['admin', 'staff'] }
+        meta: { requiresAuth: true, role: ['admin', 'doctor'] }
     },
     {
         path: '/management',

@@ -29,7 +29,7 @@
             </div>
           </td>
           <td class="px-6 py-5 text-right">
-            <button class="text-blue-500 hover:text-blue-600 font-bold text-xs uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-all">{{ t.management.inspectLog }}</button>
+            <span class="text-xs font-medium text-slate-500">{{ log.details }}</span>
           </td>
         </tr>
       </tbody>
@@ -38,17 +38,33 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useLangStore } from '@/store/langStore';
+import api from '@/api';
 
 const langStore = useLangStore();
 const t = computed(() => langStore.t);
 
-const logs = ref([
-  { id: 1, timestamp: '2026-04-07 15:32:11', username: 'admin_alpha', action: 'EXPORT_IMAGE', status: 'Success' },
-  { id: 2, timestamp: '2026-04-07 14:21:45', username: 'dr_chen', action: 'VIEW_PATIENT', status: 'Success' },
-  { id: 3, timestamp: '2026-04-07 12:05:30', username: 'system_core', action: 'BACKUP_DB', status: 'Success' },
-  { id: 4, timestamp: '2026-04-07 11:45:12', username: 'nurse_joy', action: 'UPDATE_VITAL', status: 'Success' },
-  { id: 5, timestamp: '2026-04-07 10:12:55', username: 'hacker_007', action: 'LOGIN_FAILURE', status: 'Failure' }
-]);
+const logs = ref([]);
+
+const fetchLogs = async () => {
+  try {
+    const res = await api.get('/audit-logs/');
+    const data = res.data.results || res.data;
+    logs.value = data.map(log => ({
+      id: log.id,
+      timestamp: new Date(log.created_at).toLocaleString('zh-TW', { hour12: false }),
+      username: log.operator_name || log.operator_username || 'System',
+      action: log.action,
+      details: log.details,
+      status: 'Success'
+    }));
+  } catch (err) {
+    console.error('Failed to fetch audit logs', err);
+  }
+};
+
+onMounted(() => {
+  fetchLogs();
+});
 </script>

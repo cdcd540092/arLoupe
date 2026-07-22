@@ -93,24 +93,44 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import Sidebar from '@/components/Sidebar.vue';
 import AuditTable from '@/components/AuditTable.vue';
 import UserManagementTable from '@/components/management/UserManagementTable.vue';
 import SystemSettings from '@/components/management/SystemSettings.vue';
 import { useLangStore } from '@/store/langStore';
+import api from '@/api';
 
 const activeTab = ref('Overview');
 
 const langStore = useLangStore();
 const t = computed(() => langStore.t);
 
+const dashboardStats = ref({
+  total_videos: 0,
+  total_users: 0,
+  storage_used_gb: 0
+});
+
+const fetchStats = async () => {
+  try {
+    const res = await api.get('/dashboard/stats/');
+    dashboardStats.value = res.data;
+  } catch (err) {
+    console.error("Failed to fetch dashboard stats", err);
+  }
+};
+
+onMounted(() => {
+  fetchStats();
+});
+
 const policiesState = ref([true, true, true, false]);
 
 const statsDisplay = computed(() => [
-  { label: t.value.management.totalPatients, value: '1,284', change: 12 },
-  { label: t.value.management.cloudStorage, value: '84.2 GB', change: 5 },
-  { label: t.value.management.dailyScans, value: '52', change: 24 },
+  { label: langStore.isZh ? '系統影片總數' : 'Total Videos', value: dashboardStats.value.total_videos, change: 0 },
+  { label: langStore.isZh ? '儲存空間使用' : 'Storage Used', value: dashboardStats.value.storage_used_gb + ' GB', change: 0 },
+  { label: langStore.isZh ? '註冊帳號總數' : 'Total Users', value: dashboardStats.value.total_users, change: 0 },
   { label: t.value.management.securityThreats, value: '0', change: 0 }
 ]);
 
