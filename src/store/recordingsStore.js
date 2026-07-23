@@ -88,7 +88,7 @@ export const useRecordingsStore = defineStore('recordings', () => {
                         time: v.created_at ? v.created_at.split('T')[1].substring(0, 5) : '00:00',
                         operatory: parsedOperatory,
                         procedures: parsedProcedures,
-                        tags: [],
+                        tags: Array.isArray(v.tags) ? v.tags : [],
                         markers: [],
                         videoUrl: videoUrl 
                     };
@@ -103,6 +103,20 @@ export const useRecordingsStore = defineStore('recordings', () => {
             // 發生錯誤時先不蓋掉原本的 Mock 資料，方便預覽
         } finally {
             loading.value = false;
+        }
+    }
+
+    async function updateTags(videoId, newTags) {
+        try {
+            await api.patch(`/videos/${videoId}/`, { tags: newTags });
+            const item = items.value.find(i => i.id === videoId);
+            if (item) {
+                item.tags = [...newTags];
+            }
+            return true;
+        } catch (error) {
+            console.error('Failed to update tags in Django:', error);
+            throw error;
         }
     }
 
@@ -159,6 +173,7 @@ export const useRecordingsStore = defineStore('recordings', () => {
         activePatientFromPMS,
         filteredRecordings,
         fetchRecordings,
+        updateTags,
         saveClipToDatabase,
         resetFilters
     };

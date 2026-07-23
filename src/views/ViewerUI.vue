@@ -151,21 +151,32 @@ const loadingCompliance = ref(false);
 const complianceResult = ref('');
 const newTag = ref('');
 
-const addTag = () => {
+const addTag = async () => {
   const t = newTag.value.trim();
   if (!t) return;
   const current = recordingsStore.currentRecording;
-  if (!current.tags) current.tags = [];
-  if (!current.tags.includes(t)) {
-    current.tags.push(t);
+  if (!current) return;
+  const updatedTags = [...(current.tags || [])];
+  if (!updatedTags.includes(t)) {
+    updatedTags.push(t);
+    try {
+      await recordingsStore.updateTags(current.id, updatedTags);
+    } catch (err) {
+      console.error("Failed to add tag", err);
+    }
   }
   newTag.value = '';
 };
 
-const removeTag = (index) => {
+const removeTag = async (index) => {
   const current = recordingsStore.currentRecording;
-  if (current.tags) {
-    current.tags.splice(index, 1);
+  if (!current || !current.tags) return;
+  const updatedTags = [...current.tags];
+  updatedTags.splice(index, 1);
+  try {
+    await recordingsStore.updateTags(current.id, updatedTags);
+  } catch (err) {
+    console.error("Failed to remove tag", err);
   }
 };
 
