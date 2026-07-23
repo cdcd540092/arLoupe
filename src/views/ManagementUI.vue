@@ -23,8 +23,8 @@
       </div>
       
       <!-- Overview Tab -->
-      <div v-show="activeTab === 'Overview'" class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div class="xl:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
+      <div v-show="activeTab === 'Overview'" class="space-y-8">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div v-for="stat in statsDisplay" :key="stat.label" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 group hover:border-blue-500 transition-all">
              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ stat.label }}</p>
              <h3 class="text-3xl font-black text-slate-900 dark:text-white">{{ stat.value }}</h3>
@@ -35,40 +35,8 @@
           </div>
         </div>
 
-        <div class="xl:col-span-2 space-y-8">
+        <div>
           <UserManagementTable />
-        </div>
-
-        <div class="xl:col-span-1 space-y-8">
-          <div class="bg-slate-900 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden group">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-600/20 blur-3xl rounded-full"></div>
-            <h3 class="text-xs font-black text-blue-400 uppercase tracking-widest mb-6 relative z-10">{{ t.management.securityHealth }}</h3>
-            <div class="flex items-center gap-6 relative z-10">
-               <div class="w-16 h-16 rounded-full border-[6px] border-blue-600/20 flex items-center justify-center relative">
-                  <span class="text-lg font-black tracking-tighter">94%</span>
-                  <div class="absolute inset-0 border-[6px] border-blue-500 border-t-transparent rounded-full transform -rotate-12"></div>
-               </div>
-               <div>
-                  <p class="font-black text-lg">{{ t.management.hipaaCompliance }}</p>
-                  <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">{{ t.management.strongProtection }}</p>
-               </div>
-            </div>
-          </div>
-
-          <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700">
-             <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">{{ t.management.securityPolicies }}</h3>
-             <div class="space-y-6">
-                <div v-for="policy in policiesDisplay" :key="policy.name" class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700">
-                   <div>
-                      <p class="font-black text-sm text-slate-800 dark:text-white">{{ policy.name }}</p>
-                      <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{{ policy.desc }}</p>
-                   </div>
-                   <button class="w-10 h-6 bg-blue-600 rounded-full relative transition-all shadow-lg active:scale-90">
-                      <div class="absolute right-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm"></div>
-                   </button>
-                </div>
-             </div>
-          </div>
         </div>
       </div>
 
@@ -125,19 +93,9 @@ onMounted(() => {
   fetchStats();
 });
 
-const policiesState = ref([true, true, true, false]);
-
 const statsDisplay = computed(() => [
   { label: langStore.isZh ? '系統影片總數' : 'Total Videos', value: dashboardStats.value.total_videos, change: 0 },
   { label: langStore.isZh ? '儲存空間使用' : 'Storage Used', value: dashboardStats.value.storage_used_gb + ' GB', change: 0 },
-  { label: langStore.isZh ? '註冊帳號總數' : 'Total Users', value: dashboardStats.value.total_users, change: 0 },
-  { label: t.value.management.securityThreats, value: '0', change: 0 }
-]);
-
-const policiesDisplay = computed(() => [
-  { name: t.value.management.twoFA, desc: t.value.management.twoFADesc },
-  { name: t.value.management.encryption, desc: t.value.management.encryptionDesc },
-  { name: t.value.management.timeout, desc: t.value.management.timeoutDesc },
-  { name: t.value.management.ipWhitelist, desc: t.value.management.ipWhitelistDesc }
+  { label: langStore.isZh ? '註冊帳號總數' : 'Total Users', value: dashboardStats.value.total_users, change: 0 }
 ]);
 </script>

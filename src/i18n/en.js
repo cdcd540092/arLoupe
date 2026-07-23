@@ -11,7 +11,7 @@ export default {
     login: {
         selectPortal: 'Select Access Portal',
         adminAccess: 'Admin Access',
-        adminDesc: 'System settings, user accounts, security',
+        adminDesc: 'System settings & user account management',
         clinicalStaff: 'Clinical Staff',
         staffDesc: 'Dentist & hygienist — view, search, clip videos',
         patientPortal: 'Patient Portal',
